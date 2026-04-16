@@ -1,0 +1,143 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import Lottie from 'lottie-react';
+import { usePathname } from 'next/navigation';
+
+// --- КОМПОНЕНТ "МАГНИТНЫЕ" СОЦСЕТИ ---
+const MagneticSocials = () => {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    const items = [
+        { id: 1, name: 'Instagram', url: 'https://instagram.com', icon: '/icons/instagram.svg', iconColor: '/icons/instagram_color.svg' },
+        { id: 2, name: 'Telegram', url: 'https://t.me', icon: '/icons/telegram.svg', iconColor: '/icons/telegram_color.svg' },
+        { id: 3, name: 'YouTube', url: 'https://youtube.com', icon: '/icons/youtube.svg', iconColor: '/icons/youtube_color.svg' },
+        { id: 4, name: 'Behance', url: 'https://behance.net', icon: '/icons/behance.svg', iconColor: '/icons/behance.svg' }
+    ];
+
+    return (
+        // Добавили opacity-0 и animate-stagger
+        <div
+            className="animate-stagger opacity-0 flex flex-row items-center gap-[40px] md:gap-[50px] lg:gap-[60px] xl:gap-[40px] mt-[40px] lg:mt-[50px] xl:mt-[40px] z-10 w-full"
+            onMouseLeave={() => setHoveredIndex(null)}
+        >
+            {items.map((item, index) => {
+                let transformClass = "translate-x-0 scale-100 opacity-60";
+                let currentIcon = item.icon;
+
+                if (hoveredIndex !== null) {
+                    if (index === hoveredIndex) {
+                        transformClass = "scale-[1.4] opacity-100";
+                        currentIcon = item.iconColor;
+                    } else if (index < hoveredIndex) {
+                        transformClass = "-translate-x-[25px] scale-90 opacity-30";
+                    } else if (index > hoveredIndex) {
+                        transformClass = "translate-x-[25px] scale-90 opacity-30";
+                    }
+                }
+
+                return (
+                    <a
+                        key={item.id}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        className={`transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${transformClass} outline-none cursor-pointer block w-[32px] h-[32px] md:w-[40px] md:h-[40px] lg:w-[48px] lg:h-[48px] xl:w-[32px] xl:h-[32px] shrink-0`}
+                    >
+                        <img src={currentIcon} alt={item.name} className="w-full h-full object-contain pointer-events-none" />
+                    </a>
+                );
+            })}
+        </div>
+    );
+};
+
+export default function ContactPage() {
+    const [loading, setLoading] = useState(true);
+    const [relaxAnimData, setRelaxAnimData] = useState<any>(null);
+    const pathname = usePathname();
+
+    // 1. ЕДИНЫЙ ЦИКЛ ЗАГРУЗКИ
+    useEffect(() => {
+        // Прячем всё сразу в CSS и дополнительно через GSAP
+        gsap.set([".custom-home-btn", ".custom-nav", ".animate-stagger"], { opacity: 0, y: 20 });
+
+        fetch('/relax.json')
+            .then(response => response.json())
+            .then(data => {
+                setRelaxAnimData(data);
+                // Ждем чуть-чуть, чтобы React «прожевал» данные анимации
+                setTimeout(() => {
+                    setLoading(false);
+                }, 100);
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки relax.json:', error);
+                setLoading(false); // В случае ошибки всё равно показываем страницу
+            });
+
+        return () => {
+            gsap.set([".custom-home-btn", ".custom-nav"], { clearProps: "all" });
+        };
+    }, []);
+
+    // 2. ЕДИНАЯ АНИМАЦИЯ ПОЯВЛЕНИЯ
+    useEffect(() => {
+        if (!loading && relaxAnimData) {
+            let ctx = gsap.context(() => {
+                // Анимируем всё ОДНИМ списком
+                gsap.fromTo([".custom-home-btn", ".custom-nav", ".animate-stagger"],
+                    { y: 20, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1.2,
+                        stagger: 0.08,
+                        ease: "power4.out",
+                        delay: 0.1
+                    }
+                );
+            });
+            return () => ctx.revert();
+        }
+    }, [loading, relaxAnimData]);
+
+    return (
+        <main className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
+            <div className="absolute top-0 left-0 w-full h-[100dvh] pointer-events-none z-30 flex flex-col xl:flex-row">
+                <div className="pointer-events-auto w-full h-full xl:w-[45%] flex flex-col px-[6vw] xl:pl-[4vw] xl:pr-0 pt-[16vh] md:pt-[20vh] xl:pt-[28vh] box-border">
+                    <div className="w-full">
+
+                        {/* АНИМАЦИЯ (просто часть списка animate-stagger) */}
+                        {relaxAnimData && (
+                            <div className="animate-stagger opacity-0 w-[250px] md:w-[350px] lg:w-[450px] xl:w-[4.5vw] mb-6 md:mb-10 xl:mb-6 translate-x-[-15px] origin-left scale-[1.4] lg:scale-[1.7] xl:scale-[1.6]">
+                                <Lottie animationData={relaxAnimData} loop={true} />
+                            </div>
+                        )}
+
+                        <p className="animate-stagger opacity-0 text-[20px] md:text-[24px] lg:text-[28px] xl:text-[1.2vw] font-medium leading-[1.6] text-[#111] opacity-90 mb-12 md:mb-16 xl:mb-12 max-w-[500px] lg:max-w-[750px] xl:max-w-[500px]">
+                            I am always open to discuss your project, improve your online presence or help with your UX/UI design challenges.
+                        </p>
+
+                        <div className="flex flex-col gap-1 mb-8 lg:mb-12 xl:mb-8">
+                            <span className="animate-stagger opacity-0 text-[11px] md:text-[13px] lg:text-[14px] xl:text-[11px] font-bold tracking-widest text-[#111] opacity-40 uppercase mb-2">
+                                Contact Details
+                            </span>
+                            <a href="mailto:hello@kesa.today" className="animate-stagger opacity-0 text-[18px] md:text-[22px] lg:text-[26px] xl:text-[1.5vw] font-bold text-[#111] opacity-80 hover:opacity-100 transition-opacity no-underline w-max">
+                                hello@kesa.today
+                            </a>
+                            <a href="tel:+1234567890" className="animate-stagger opacity-0 text-[18px] md:text-[22px] lg:text-[26px] xl:text-[1.5vw] font-bold text-[#111] opacity-80 hover:opacity-100 transition-opacity no-underline w-max mt-2">
+                                +1 (234) 567-890
+                            </a>
+                        </div>
+
+                        <MagneticSocials />
+                    </div>
+                </div>
+                <div className="hidden xl:block xl:w-[55%] h-full pointer-events-none"></div>
+            </div>
+        </main>
+    );
+}

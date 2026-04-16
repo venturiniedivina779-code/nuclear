@@ -1,0 +1,42 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Header } from '../components/Header';
+import CustomCursor from '../components/CustomCursor';
+
+// Настройка шрифта
+const inter = Inter({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '700']
+});
+
+export const metadata: Metadata = {
+  title: 'Kesa Today',
+  description: 'Portfolio of Kesa',
+  icons: {
+    icon: '/fav3.ico', // путь от папки public или app
+    // Если есть разные форматы:
+    apple: '/fav3.ico', // для айфонов
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+
+        {/* Кастомный курсор будет работать на всех страницах */}
+        <CustomCursor />
+
+        {/* Шапка теперь зафиксирована на уровне всего приложения */}
+        <Header />
+
+        {children}
+      </body>
+    </html>
+  );
+}
