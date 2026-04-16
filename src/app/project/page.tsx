@@ -4,35 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import Image from 'next/image';
 import { TransitionLink } from '../../components/TransitionLink';
-import Link from 'next/link';
-import Lottie from 'lottie-react';
-import Pupsiko from '../../components/Pupsiko'; // Проверь путь к компоненту!
-
-// 1. ДОБАВЛЯЕМ КОМПОНЕНТ ДЛЯ ССЫЛОК
-const NavLink = ({ text }: { text: string }) => (
-    <div
-        className="group cursor-pointer overflow-hidden"
-        style={{ position: 'relative', height: '20px', display: 'block', flexShrink: 0 }}
-    >
-        <div className="transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-1/2">
-            {/* Используем темный цвет #111 для светлой страницы */}
-            <span className="text-sm font-bold tracking-widest text-[#111]/50" style={{ display: 'block', lineHeight: '20px', whiteSpace: 'nowrap' }}>
-                {text}
-            </span>
-            <span className="text-sm font-bold tracking-widest text-[#111]" style={{ display: 'block', lineHeight: '20px', whiteSpace: 'nowrap' }}>
-                {text}
-            </span>
-        </div>
-    </div>
-);
-
-const productNames = ["Pupsiko", "Memo", "Jelly", "Luk", "Jofy", "Barb", "Cera", "Orion", "Luna", "Nova", "Aura", "Stella", "Lyra", "Vista", "Terra", "Aqua", "Ignis", "Ventus"];
-
-const products = Array.from({ length: 18 }, (_, i) => ({
-    id: i + 1,
-    title: productNames[i],
-    src: `/product/${i === 3 ? 'image4' : i === 0 ? 'Image1' : i === 1 ? 'Image2' : i === 2 ? 'Image3' : `image${i + 1}`}.png`
-}));
+// Импортируем нашу новую базу данных!
+import { productsData } from '../../data/products';
 
 export default function ProjectPage() {
     const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -43,38 +16,8 @@ export default function ProjectPage() {
     const scrollState = useRef({ target: 0, current: 0 });
     const [contentHeight, setContentHeight] = useState(2000);
 
-    const [productOpen, setProductOpen] = useState(false);
-    const productRef = useRef<HTMLDivElement>(null);
-    const [arrowAnimData, setArrowAnimData] = useState<any>(null);
-
-    useEffect(() => {
-        fetch('/arrow.json')
-            .then(response => response.json())
-            .then(data => setArrowAnimData(data))
-            .catch(error => console.error('Ошибка загрузки стрелки:', error));
-    }, []);
-
-    useEffect(() => {
-        if (!productRef.current) return;
-        if (productOpen) {
-            gsap.set(productRef.current, { display: 'block', transformOrigin: 'center center' });
-            gsap.fromTo(
-                productRef.current,
-                { scale: 0.8, opacity: 0 },
-                { scale: 1, opacity: 1, duration: 0.9, ease: 'power4.out' }
-            );
-        } else {
-            gsap.to(productRef.current, {
-                scale: 0.8,
-                opacity: 0,
-                duration: 0.6,
-                ease: 'power2.out',
-                onComplete: () => {
-                    if (productRef.current) gsap.set(productRef.current, { display: 'none' });
-                },
-            });
-        }
-    }, [productOpen]);
+    // Превращаем объект productsData в массив для удобного рендера
+    const productsList = Object.values(productsData);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -87,7 +30,6 @@ export default function ProjectPage() {
                 );
             }
 
-            // 2. АНИМАЦИЯ ПОЯВЛЕНИЯ МЕНЮ
             gsap.fromTo(".animate-up",
                 { y: 30, opacity: 0 },
                 { y: 0, opacity: 1, duration: 1.2, stagger: 0.1, ease: "power4.out" }
@@ -121,6 +63,7 @@ export default function ProjectPage() {
                     }
                 }
 
+                // Анимация появления карточек при скролле
                 if (rightContentRef.current) {
                     const viewportH = window.innerHeight;
                     const cards = rightContentRef.current.querySelectorAll('.product-card');
@@ -183,11 +126,6 @@ export default function ProjectPage() {
     return (
         <div className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
 
-            {/* 3. ВОЗВРАЩАЕМ ГЛОБАЛЬНОЕ МЕНЮ (z-индекс выше контента) */}
-
-
-
-
             <div
                 id="project-scroll-track"
                 className="absolute top-0 h-full overflow-y-auto overflow-x-hidden custom-scrollbar z-20 pointer-events-auto w-full lg:left-[35%] lg:w-[65%]"
@@ -203,15 +141,6 @@ export default function ProjectPage() {
                     if (scrollDiv) scrollDiv.scrollTop += e.deltaY;
                 }}
             >
-                <div className="custom-home-btn pointer-events-auto">
-                    <Link
-                        href="/"
-                        className="text-sm font-bold tracking-widest text-[#111] opacity-70 hover:opacity-100 transition-opacity bg-transparent border-none cursor-pointer p-0 m-0 no-underline outline-none"
-                    >
-                        Kesa.today
-                    </Link>
-                </div>
-
                 <div
                     ref={leftPanelRef}
                     className="flex flex-col justify-start lg:justify-center pointer-events-auto z-40 shrink-0 relative w-full h-auto pt-[12vh] pb-[8vh] px-[6vw] md:pt-[20vh] md:pb-[10vh] md:px-[60px] lg:fixed lg:top-0 lg:left-0 lg:w-[35%] lg:h-[100dvh] lg:py-[6vh] lg:px-[4vw] box-border"
@@ -236,14 +165,6 @@ export default function ProjectPage() {
                                 Role: UI/UX & Layout
                             </span>
                         </div>
-
-                        {/*} <div className="relative w-[60px] h-[60px] mt-[40px] z-10 flex items-center justify-center pointer-events-none">
-                            {arrowAnimData && (
-                                <div className="absolute w-[300px] h-[300px] lg:w-[400px] lg:h-[400px] scale-x-[-1] rotate-270 translate-x-[15px] flex items-center justify-center">
-                                    <Lottie animationData={arrowAnimData} loop={true} />
-                                </div>
-                            )}
-                        </div>*/}
                     </div>
                 </div>
 
@@ -253,41 +174,26 @@ export default function ProjectPage() {
                 >
                     <div className="max-w-[1200px] mx-auto w-full">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[25px] lg:gap-[20px] w-full">
-                            {products.map((product) => (
-                                <Link
+                            {/* Рендерим карточки на основе базы данных */}
+                            {productsList.map((product) => (
+                                <TransitionLink
                                     key={product.id}
-                                    href={`/product/${product.title.toLowerCase()}`}
+                                    href={`/product/${product.id}`}
                                     className="product-card cursor-pointer group relative bg-[#e3e3e3] aspect-square overflow-hidden opacity-0 shadow-sm w-full block"
                                 >
-                                    {/* всё внутреннее содержимое оставляем без изменений! */}
                                     <h3 className="absolute top-[20px] left-[20px] z-10 text-[20px] md:text-[18px] font-semibold tracking-tight text-[#111] pointer-events-none">
                                         {product.title}
                                     </h3>
 
                                     <div className="w-full h-full flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-[1.1]">
-                                        <Image src={product.src} alt={product.title} width={400} height={400} className="max-w-[70%] max-h-[70%] object-contain drop-shadow-lg" />
+                                        {/* Используем первое фото из массива фотографий продукта */}
+                                        <Image src={product.photos[0]} alt={product.title} width={400} height={400} className="max-w-[70%] max-h-[70%] object-contain drop-shadow-lg" />
                                     </div>
-
-                                    {product.id === 5 && (
-                                        <span className="absolute bottom-[20px] right-[20px] text-[11px] font-bold tracking-tight text-[#111] opacity-50 pointer-events-none z-20">
-                                            Golden Canon Grid
-                                        </span>
-                                    )}
-                                </Link>
+                                </TransitionLink>
                             ))}
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div
-                ref={productRef}
-                style={{
-                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                    zIndex: 999, transform: 'scale(0.8)', opacity: 0, display: 'none', overflow: 'hidden',
-                }}
-            >
-                <Pupsiko isOpen={productOpen} onClose={() => setProductOpen(false)} onGoHome={() => window.location.href = '/'} />
             </div>
         </div>
     );
