@@ -7,8 +7,9 @@ import gsap from 'gsap';
 import Lottie from 'lottie-react';
 import { productsData, Product } from '../../../data/products';
 import { TransitionLink } from '../../../components/TransitionLink';
-// Импортируем наш новенький чистый Лайтбокс!
+// Импортируем наши чистые UI-компоненты
 import { Lightbox } from '../../../components/ui/Lightbox';
+import { ShareModal } from '../../../components/ui/ShareModal';
 
 export default function ProductPage() {
     const params = useParams<{ id: string }>();
@@ -16,52 +17,8 @@ export default function ProductPage() {
     const productId = params.id ? params.id.toLowerCase() : 'pupsiko';
     const product: Product = productsData[productId] || productsData['pupsiko'];
 
-    // --- ЛОГИКА SHARE POP-UP (Ее мы вынесем на следующем шаге!) ---
+    // Вся логика модалок и галерей теперь сводится к этим двум простым состояниям!
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-    const [copyText, setCopyText] = useState("Copy");
-    const [currentUrl, setCurrentUrl] = useState("");
-    const shareModalRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            setCurrentUrl(window.location.href);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (isShareModalOpen && shareModalRef.current) {
-            gsap.fromTo(shareModalRef.current,
-                { opacity: 0, y: 30, scale: 0.95 },
-                { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.2)" }
-            );
-        }
-    }, [isShareModalOpen]);
-
-    const openShareModal = () => setIsShareModalOpen(true);
-
-    const closeShareModal = () => {
-        if (!shareModalRef.current) return;
-        gsap.to(shareModalRef.current, {
-            opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: "power2.in",
-            onComplete: () => {
-                setIsShareModalOpen(false);
-                setCopyText("Copy");
-            }
-        });
-    };
-
-    const handleCopyLink = async () => {
-        try {
-            await navigator.clipboard.writeText(currentUrl);
-            setCopyText("Copied");
-            setTimeout(() => setCopyText("Copy"), 2000);
-        } catch (err) {
-            console.error('Failed to copy: ', err);
-        }
-    };
-    // ---------------------------
-
-    // Стейт для Лайтбокса (осталась всего 1 строчка!)
     const [fullscreenIdx, setFullscreenIdx] = useState<number | null>(null);
 
     const contentHeightRef = useRef<HTMLDivElement>(null);
@@ -182,25 +139,16 @@ export default function ProductPage() {
                             <span className="text-[14px] font-bold opacity-80 text-[#111]">Role: {product.role}</span>
                         </div>
 
+                        {/* Кнопка Share - теперь она просто меняет стейт! */}
                         <button
-                            onClick={openShareModal}
-                            className={`flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer ${copyText === "Copy"
-                                ? "bg-[#dddddd] text-[#111] hover:bg-[#ff6d6d] hover:text-[#ebebeb]"
-                                : "bg-[#22c55e] text-white"
-                                }`}
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#22c55e] text-white hover:bg-[#1eb053]"
                         >
-                            {copyText === "Copy" ? (
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                            ) : (
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                </svg>
-                            )}
-                            <span style={{ transform: 'translateY(1px)' }}>{copyText}</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span style={{ transform: 'translateY(1px)' }}>Share</span>
                         </button>
 
                         <TransitionLink
@@ -241,67 +189,18 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            {/* ВЫЗЫВАЕМ НАШ НОВЫЙ КОМПОНЕНТ ЛАЙТБОКСА! */}
+            {/* ВЫЗЫВАЕМ НАШИ НЕЗАВИСИМЫЕ UI КОМПОНЕНТЫ */}
             <Lightbox
                 photos={product.photos}
                 currentIndex={fullscreenIdx}
                 setCurrentIndex={setFullscreenIdx}
             />
 
-            {/* SHARE POP-UP (MODAL) */}
-            {isShareModalOpen && (
-                <div
-                    className="fixed inset-0 w-full h-[100dvh] bg-black/40 z-[300] flex items-center justify-center pointer-events-auto backdrop-blur-[2px] transition-opacity"
-                    onClick={closeShareModal}
-                >
-                    <div
-                        ref={shareModalRef}
-                        className="bg-[#f5f5f5] text-[#111] p-[30px] md:p-[40px] flex flex-col shadow-2xl relative w-[90%] max-w-[500px] rounded-[30px] box-border"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex justify-between items-center w-full mb-[25px]">
-                            <h3 className="text-[22px] md:text-[26px] font-medium text-[#111] m-0 leading-none">
-                                Project Link
-                            </h3>
-                            <button
-                                onClick={closeShareModal}
-                                className="text-[28px] text-[#111] opacity-60 hover:opacity-100 transition-all duration-300 hover:rotate-90 outline-none border-none bg-transparent cursor-pointer leading-none flex items-center justify-center translate-y-[-2px]"
-                            >
-                                ✕
-                            </button>
-                        </div>
+            <ShareModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+            />
 
-                        <div className="w-full bg-[#ffffff] h-[60px] rounded-[16px] px-[20px] mb-[30px] flex items-center box-border overflow-hidden">
-                            <p className="text-[16px] font-medium text-[#111] truncate select-all outline-none w-full">
-                                {currentUrl}
-                            </p>
-                        </div>
-
-                        <div className="flex justify-start w-full">
-                            <button
-                                onClick={handleCopyLink}
-                                className={`flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer ${copyText === "Copy"
-                                    ? "bg-[#ebebeb] text-[#111] hover:bg-[#ff6d6d] hover:text-[#ebebeb]"
-                                    : "bg-[#22c55e] text-white"
-                                    }`}
-                            >
-                                {copyText === "Copy" ? (
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                ) : (
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                    </svg>
-                                )}
-                                <span style={{ transform: 'translateY(1px)' }}>{copyText}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
