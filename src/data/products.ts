@@ -1,6 +1,15 @@
 // src/data/products.ts
 
-export const productsData: Record<string, any> = {
+export interface Product {
+    id: string;
+    title: string;
+    description: string;
+    year: string;
+    role: string;
+    photos: string[];
+}
+
+export const productsData: Record<string, Product> = {
     pupsiko: {
         id: "pupsiko",
         title: "Pupsiko",
@@ -28,5 +37,4 @@ export const productsData: Record<string, any> = {
             '/product/image4.png',
         ]
     },
-    // Сюда потом будешь добавлять новые товары, просто копируя блок выше
 };

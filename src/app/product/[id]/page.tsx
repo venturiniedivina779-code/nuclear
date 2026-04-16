@@ -1,26 +1,23 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import gsap from 'gsap';
 import Lottie from 'lottie-react';
-import { productsData } from '../../../data/products';
-
-
+import { productsData, Product } from '../../../data/products';
+import { TransitionLink } from '../../../components/TransitionLink';
 
 export default function ProductPage() {
-    const params = useParams();
-    const router = useRouter();
+    const params = useParams<{ id: string }>();
 
-    // Получаем ID из URL и ищем товар. Если не найден, показываем Pupsiko (или можно сделать редирект на 404)
-    const productId = typeof params.id === 'string' ? params.id.toLowerCase() : 'pupsiko';
-    const product = productsData[productId] || productsData['pupsiko'];
+    // Получаем ID из URL и ищем товар.
+    const productId = params.id ? params.id.toLowerCase() : 'pupsiko';
+    const product: Product = productsData[productId] || productsData['pupsiko'];
 
     // --- ЛОГИКА SHARE POP-UP ---
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-    const [copyText, setCopyText] = useState("Copy"); // Изменили регистр как на скрине
+    const [copyText, setCopyText] = useState("Copy");
     const [currentUrl, setCurrentUrl] = useState("");
     const shareModalRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +27,6 @@ export default function ProductPage() {
         }
     }, []);
 
-    // ИСПРАВЛЕНИЕ: Плавное появление запускается ПОСЛЕ того, как React отрисовал окно
     useEffect(() => {
         if (isShareModalOpen && shareModalRef.current) {
             gsap.fromTo(shareModalRef.current,
@@ -40,9 +36,7 @@ export default function ProductPage() {
         }
     }, [isShareModalOpen]);
 
-    const openShareModal = () => {
-        setIsShareModalOpen(true);
-    };
+    const openShareModal = () => setIsShareModalOpen(true);
 
     const closeShareModal = () => {
         if (!shareModalRef.current) return;
@@ -58,7 +52,7 @@ export default function ProductPage() {
     const handleCopyLink = async () => {
         try {
             await navigator.clipboard.writeText(currentUrl);
-            setCopyText("Copied"); // Меняем текст как на скрине
+            setCopyText("Copied");
             setTimeout(() => setCopyText("Copy"), 2000);
         } catch (err) {
             console.error('Failed to copy: ', err);
@@ -68,31 +62,23 @@ export default function ProductPage() {
 
     const [fullscreenIdx, setFullscreenIdx] = useState<number | null>(null);
     const [isClosing, setIsClosing] = useState(false);
-    const [contentHeight, setContentHeight] = useState(2000);
+    // Используем ref для высоты скролла, чтобы избежать лишних ререндеров
+    const contentHeightRef = useRef<HTMLDivElement>(null);
     const [arrowAnimData, setArrowAnimData] = useState<any>(null);
 
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightContentRef = useRef<HTMLDivElement>(null);
     const customCursorRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const scrollState = useRef({ target: 0, current: 0 });
     const cursorPos = useRef({ x: 0, y: 0 });
 
-    // Загрузка анимации стрелки
-
-    {/*
-    useEffect(() => {
-        fetch('/arrow.json')
-            .then(response => response.json())
-            .then(data => setArrowAnimData(data))
-            .catch(error => console.error('Ошибка загрузки анимации стрелки:', error));
-    }, []);
-    */}
-
     // GSAP: Скролл, Курсор и Вступительная анимация
     useEffect(() => {
+        let renderTick: () => void;
+
         let ctx = gsap.context(() => {
-            // Анимация текста левой панели
             const staggerEls = document.querySelectorAll('.animate-stagger');
             if (staggerEls.length > 0) {
                 gsap.fromTo(
@@ -102,14 +88,7 @@ export default function ProductPage() {
                 );
             }
 
-            // Анимация глобального меню
-            gsap.fromTo(".animate-up",
-                { y: 30, opacity: 0 },
-                { y: 0, opacity: 1, duration: 1.2, stagger: 0.1, ease: "power4.out" }
-            );
-
-            const renderTick = () => {
-                // Кастомный курсор
+            renderTick = () => {
                 if (customCursorRef.current) {
                     gsap.to(customCursorRef.current, {
                         x: cursorPos.current.x,
@@ -119,7 +98,6 @@ export default function ProductPage() {
                     });
                 }
 
-                // Плавный скролл
                 scrollState.current.current += (scrollState.current.target - scrollState.current.current) * 0.08;
                 const currentScrollRaw = scrollState.current.current;
 
@@ -136,11 +114,7 @@ export default function ProductPage() {
             };
 
             gsap.ticker.add(renderTick);
-
-            return () => {
-                gsap.ticker.remove(renderTick);
-            };
-        });
+        }, containerRef); // Ограничиваем область поиска элементов
 
         const handleMouseMove = (e: MouseEvent) => {
             cursorPos.current = { x: e.clientX, y: e.clientY };
@@ -154,7 +128,9 @@ export default function ProductPage() {
                 const isFixed = window.getComputedStyle(leftPanelRef.current).position === 'fixed';
                 if (!isFixed) h += leftPanelRef.current.offsetHeight;
             }
-            setContentHeight(h + 200);
+            if (contentHeightRef.current) {
+                contentHeightRef.current.style.height = `${h + 200}px`;
+            }
         });
 
         if (rightContentRef.current) resizeObserver.observe(rightContentRef.current);
@@ -162,6 +138,7 @@ export default function ProductPage() {
 
         return () => {
             ctx.revert();
+            if (renderTick) gsap.ticker.remove(renderTick);
             window.removeEventListener('mousemove', handleMouseMove);
             resizeObserver.disconnect();
         };
@@ -177,7 +154,6 @@ export default function ProductPage() {
         return () => document.documentElement.classList.remove('lightbox-is-open');
     }, [fullscreenIdx, isClosing]);
 
-    // Управление Лайтбоксом
     const closeLightbox = useCallback((e?: React.MouseEvent | KeyboardEvent) => {
         e?.stopPropagation();
         setIsClosing(true);
@@ -210,38 +186,8 @@ export default function ProductPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [fullscreenIdx, isClosing, closeLightbox, showNextPhoto, showPrevPhoto]);
 
-    // Функция SHARE
-    const handleShare = async () => {
-        const shareData = {
-            title: product.title,
-            text: product.description,
-            url: window.location.href,
-        };
-        try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-            } else {
-                await navigator.clipboard.writeText(window.location.href);
-                alert('Ссылка скопирована!');
-            }
-        } catch (err) {
-            console.error('Error sharing:', err);
-        }
-    };
-
     return (
-        <div className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
-
-            {/* 2. ГЛОБАЛЬНОЕ МЕНЮ И СОЦСЕТИ */}
-
-
-
-
-            <div className="custom-home-btn pointer-events-auto z-[110]">
-                <Link href="/" className="text-sm font-bold tracking-widest text-[#111] opacity-70 hover:opacity-100 transition-opacity bg-transparent border-none outline-none no-underline">
-                    Kesa.today
-                </Link>
-            </div>
+        <div ref={containerRef} className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
 
             {/* ТРЕК ДЛЯ СКРОЛЛА */}
             <div
@@ -249,7 +195,7 @@ export default function ProductPage() {
                 className="absolute top-0 left-0 w-full h-full overflow-y-auto custom-scrollbar z-20 pointer-events-auto"
                 onScroll={(e) => { scrollState.current.target = e.currentTarget.scrollTop; }}
             >
-                <div style={{ height: contentHeight }} className="w-px pointer-events-none opacity-0" />
+                <div ref={contentHeightRef} className="w-px pointer-events-none opacity-0" />
             </div>
 
             {/* КОНТЕНТ */}
@@ -267,24 +213,19 @@ export default function ProductPage() {
                 >
                     <div className="animate-stagger flex flex-col w-full max-w-[100%] lg:max-w-[90%] my-auto lg:m-auto">
 
-                        {/* Заголовок */}
                         <h2 className="text-[32px] md:text-[40px] lg:text-[3.5vw] font-bold tracking-tighter leading-none mb-[30px] text-[#111]">
                             {product.title}
                         </h2>
 
-                        {/* Описание */}
                         <p className="text-[20px] md:text-lg lg:text-[1.2vw] font-medium leading-[1.6] opacity-90 mb-[50px] text-[#111]">
                             {product.description}
                         </p>
 
-                        {/* Блок деталей (Year, Role) */}
                         <div className="flex flex-col gap-1 mb-[50px]">
                             <span className="text-[11px] font-bold tracking-widest opacity-40 uppercase text-[#111]">Project Details</span>
                             <span className="text-[14px] font-bold opacity-80 mt-2 text-[#111]">Year: {product.year}</span>
                             <span className="text-[14px] font-bold opacity-80 text-[#111]">Role: {product.role}</span>
                         </div>
-
-                        {/* Кнопка Share / Поделиться */}
 
                         <button
                             onClick={openShareModal}
@@ -307,18 +248,19 @@ export default function ProductPage() {
                             <span style={{ transform: 'translateY(1px)' }}>{copyText}</span>
                         </button>
 
-
-                        {/* Кнопка Назад */}
-                        <button
-                            onClick={() => router.push('/project')}
-                            className="relative w-[60px] h-[60px] opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 self-start"
+                        {/* НОВАЯ КНОПКА НАЗАД С TRANSITION LINK */}
+                        <TransitionLink
+                            href="/project"
+                            className="relative w-[60px] h-[60px] opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 self-start mt-8"
                         >
-                            {arrowAnimData && (
+                            {arrowAnimData ? (
                                 <div className="absolute w-[300px] h-[300px] lg:w-[400px] lg:h-[400px] scale-x-[-1] rotate-90 translate-x-[15px] pointer-events-none flex items-center justify-center">
                                     <Lottie animationData={arrowAnimData} loop={true} />
                                 </div>
+                            ) : (
+                                <span className="text-sm font-bold opacity-50">Back</span>
                             )}
-                        </button>
+                        </TransitionLink>
 
                     </div>
                 </div>
@@ -346,7 +288,7 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            {/* 4. ЛАЙТБОКС */}
+            {/* ЛАЙТБОКС */}
             <div
                 className={`fixed inset-0 w-full h-[100dvh] bg-[#ebebeb] flex flex-col items-center z-[99999] transition-opacity duration-300 ease-out ${fullscreenIdx !== null && !isClosing ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                     }`}
@@ -364,7 +306,6 @@ export default function ProductPage() {
                         </div>
 
                         <div className="mt-auto w-full flex items-center justify-center gap-[40px] md:gap-[80px] pb-[8vh] pointer-events-auto">
-                            {/* Кнопка LEFT */}
                             <button
                                 onClick={showPrevPhoto}
                                 onMouseEnter={(e) => gsap.to(e.currentTarget, { x: -15, opacity: 1, duration: 0.4, ease: "power3.out" })}
@@ -374,7 +315,6 @@ export default function ProductPage() {
                                 Left
                             </button>
 
-                            {/* Кнопка ЗАКРЫТЬ (Крестик) */}
                             <button
                                 onClick={closeLightbox}
                                 onMouseEnter={(e) => gsap.to(e.currentTarget, { rotate: 90, scale: 1.2, opacity: 1, duration: 0.5, ease: "back.out(1.5)" })}
@@ -384,7 +324,6 @@ export default function ProductPage() {
                                 ✕
                             </button>
 
-                            {/* Кнопка RIGHT */}
                             <button
                                 onClick={showNextPhoto}
                                 onMouseEnter={(e) => gsap.to(e.currentTarget, { x: 15, opacity: 1, duration: 0.4, ease: "power3.out" })}
@@ -398,25 +337,21 @@ export default function ProductPage() {
                 )}
             </div>
 
-            {/* ====== SHARE POP-UP (MODAL) ====== */}
+            {/* SHARE POP-UP (MODAL) */}
             {isShareModalOpen && (
                 <div
                     className="fixed inset-0 w-full h-[100dvh] bg-black/40 z-[300] flex items-center justify-center pointer-events-auto backdrop-blur-[2px] transition-opacity"
                     onClick={closeShareModal}
                 >
-                    {/* КОНТЕЙНЕР ОКНА (Светло-серый фон) */}
                     <div
                         ref={shareModalRef}
                         className="bg-[#f5f5f5] text-[#111] p-[30px] md:p-[40px] flex flex-col shadow-2xl relative w-[90%] max-w-[500px] rounded-[30px] box-border"
                         onClick={(e) => e.stopPropagation()}
                     >
-
-                        {/* ШАПКА: Заголовок и Крестик на одной линии */}
                         <div className="flex justify-between items-center w-full mb-[25px]">
                             <h3 className="text-[22px] md:text-[26px] font-medium text-[#111] m-0 leading-none">
                                 Project Link
                             </h3>
-                            {/* КРЕСТИК: Теперь плавно поворачивается на 90 градусов при наведении */}
                             <button
                                 onClick={closeShareModal}
                                 className="text-[28px] text-[#111] opacity-60 hover:opacity-100 transition-all duration-300 hover:rotate-90 outline-none border-none bg-transparent cursor-pointer leading-none flex items-center justify-center translate-y-[-2px]"
@@ -425,16 +360,13 @@ export default function ProductPage() {
                             </button>
                         </div>
 
-                        {/* ПОЛЕ СО ССЫЛКОЙ (Белое, truncate) */}
                         <div className="w-full bg-[#ffffff] h-[60px] rounded-[16px] px-[20px] mb-[30px] flex items-center box-border overflow-hidden">
                             <p className="text-[16px] font-medium text-[#111] truncate select-all outline-none w-full">
                                 {currentUrl}
                             </p>
                         </div>
 
-                        {/* КОНТЕЙНЕР ДЛЯ КНОПКИ (Кнопка по центру) */}
-                        <div className="flex jjustify-start w-full">
-                            {/* КНОПКА COPY: Скругление теперь такое же, как у поля ссылки (rounded-[16px]) */}
+                        <div className="flex justify-start w-full">
                             <button
                                 onClick={handleCopyLink}
                                 className={`flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer ${copyText === "Copy"
@@ -456,11 +388,9 @@ export default function ProductPage() {
                                 <span style={{ transform: 'translateY(1px)' }}>{copyText}</span>
                             </button>
                         </div>
-
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
