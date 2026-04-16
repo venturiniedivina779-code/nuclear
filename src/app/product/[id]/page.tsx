@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import gsap from 'gsap';
 import Lottie from 'lottie-react';
 import { productsData, Product } from '../../../data/products';
 import { TransitionLink } from '../../../components/TransitionLink';
+// Импортируем наш новенький чистый Лайтбокс!
+import { Lightbox } from '../../../components/ui/Lightbox';
 
 export default function ProductPage() {
     const params = useParams<{ id: string }>();
 
-    // Получаем ID из URL и ищем товар.
     const productId = params.id ? params.id.toLowerCase() : 'pupsiko';
     const product: Product = productsData[productId] || productsData['pupsiko'];
 
-    // --- ЛОГИКА SHARE POP-UP ---
+    // --- ЛОГИКА SHARE POP-UP (Ее мы вынесем на следующем шаге!) ---
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [copyText, setCopyText] = useState("Copy");
     const [currentUrl, setCurrentUrl] = useState("");
@@ -60,9 +61,9 @@ export default function ProductPage() {
     };
     // ---------------------------
 
+    // Стейт для Лайтбокса (осталась всего 1 строчка!)
     const [fullscreenIdx, setFullscreenIdx] = useState<number | null>(null);
-    const [isClosing, setIsClosing] = useState(false);
-    // Используем ref для высоты скролла, чтобы избежать лишних ререндеров
+
     const contentHeightRef = useRef<HTMLDivElement>(null);
     const [arrowAnimData, setArrowAnimData] = useState<any>(null);
 
@@ -74,7 +75,6 @@ export default function ProductPage() {
     const scrollState = useRef({ target: 0, current: 0 });
     const cursorPos = useRef({ x: 0, y: 0 });
 
-    // GSAP: Скролл, Курсор и Вступительная анимация
     useEffect(() => {
         let renderTick: () => void;
 
@@ -114,7 +114,7 @@ export default function ProductPage() {
             };
 
             gsap.ticker.add(renderTick);
-        }, containerRef); // Ограничиваем область поиска элементов
+        }, containerRef);
 
         const handleMouseMove = (e: MouseEvent) => {
             cursorPos.current = { x: e.clientX, y: e.clientY };
@@ -144,52 +144,9 @@ export default function ProductPage() {
         };
     }, []);
 
-    // Блокировка скролла для Лайтбокса
-    useEffect(() => {
-        if (fullscreenIdx !== null && !isClosing) {
-            document.documentElement.classList.add('lightbox-is-open');
-        } else {
-            document.documentElement.classList.remove('lightbox-is-open');
-        }
-        return () => document.documentElement.classList.remove('lightbox-is-open');
-    }, [fullscreenIdx, isClosing]);
-
-    const closeLightbox = useCallback((e?: React.MouseEvent | KeyboardEvent) => {
-        e?.stopPropagation();
-        setIsClosing(true);
-        setTimeout(() => {
-            setFullscreenIdx(null);
-            setIsClosing(false);
-        }, 300);
-    }, []);
-
-    const showNextPhoto = useCallback((e?: React.MouseEvent | KeyboardEvent) => {
-        e?.stopPropagation();
-        if (fullscreenIdx === null) return;
-        setFullscreenIdx((prev) => (prev !== null ? (prev + 1) % product.photos.length : 0));
-    }, [fullscreenIdx, product.photos.length]);
-
-    const showPrevPhoto = useCallback((e?: React.MouseEvent | KeyboardEvent) => {
-        e?.stopPropagation();
-        if (fullscreenIdx === null) return;
-        setFullscreenIdx((prev) => (prev !== null ? (prev - 1 + product.photos.length) % product.photos.length : 0));
-    }, [fullscreenIdx, product.photos.length]);
-
-    useEffect(() => {
-        if (fullscreenIdx === null || isClosing) return;
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') closeLightbox(e);
-            if (e.key === 'ArrowRight') showNextPhoto(e);
-            if (e.key === 'ArrowLeft') showPrevPhoto(e);
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [fullscreenIdx, isClosing, closeLightbox, showNextPhoto, showPrevPhoto]);
-
     return (
         <div ref={containerRef} className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
 
-            {/* ТРЕК ДЛЯ СКРОЛЛА */}
             <div
                 id="product-scroll-track"
                 className="absolute top-0 left-0 w-full h-full overflow-y-auto custom-scrollbar z-20 pointer-events-auto"
@@ -198,7 +155,6 @@ export default function ProductPage() {
                 <div ref={contentHeightRef} className="w-px pointer-events-none opacity-0" />
             </div>
 
-            {/* КОНТЕНТ */}
             <div
                 className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-visible z-30 flex flex-col lg:block"
                 onWheel={(e) => {
@@ -206,7 +162,6 @@ export default function ProductPage() {
                     if (scrollDiv) scrollDiv.scrollTop += e.deltaY;
                 }}
             >
-                {/* ЛЕВАЯ ПАНЕЛЬ */}
                 <div
                     ref={leftPanelRef}
                     className="global-menu-wrapper flex flex-col justify-start lg:justify-center pointer-events-auto z-40 shrink-0 relative w-full h-auto pt-[12vh] pb-[8vh] px-[6vw] md:pt-[20vh] md:pb-[10vh] md:px-[60px] lg:fixed lg:top-0 lg:left-0 lg:w-[35%] lg:h-[100dvh] lg:py-[6vh] lg:px-[4vw] box-border"
@@ -248,7 +203,6 @@ export default function ProductPage() {
                             <span style={{ transform: 'translateY(1px)' }}>{copyText}</span>
                         </button>
 
-                        {/* НОВАЯ КНОПКА НАЗАД С TRANSITION LINK */}
                         <TransitionLink
                             href="/project"
                             className="relative w-[60px] h-[60px] opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 self-start mt-8"
@@ -265,7 +219,6 @@ export default function ProductPage() {
                     </div>
                 </div>
 
-                {/* ПРАВАЯ ПАНЕЛЬ С СЕТКОЙ */}
                 <div
                     ref={rightContentRef}
                     className="pointer-events-auto shrink-0 relative w-full h-auto px-[6vw] md:px-[60px] pb-[10vh] lg:absolute lg:top-[150px] lg:left-[35%] lg:w-[65%] lg:p-[4vw] lg:pt-0 box-border"
@@ -288,54 +241,12 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            {/* ЛАЙТБОКС */}
-            <div
-                className={`fixed inset-0 w-full h-[100dvh] bg-[#ebebeb] flex flex-col items-center z-[99999] transition-opacity duration-300 ease-out ${fullscreenIdx !== null && !isClosing ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                    }`}
-                onClick={closeLightbox}
-            >
-                {fullscreenIdx !== null && (
-                    <>
-                        <div className="relative w-full h-[80vh] flex items-center justify-center pointer-events-none p-[5vh]">
-                            <Image
-                                src={product.photos[fullscreenIdx]}
-                                alt="Full Product"
-                                fill
-                                className={`object-contain select-none transition-transform duration-300 ease-out ${!isClosing ? 'scale-100' : 'scale-95'}`}
-                            />
-                        </div>
-
-                        <div className="mt-auto w-full flex items-center justify-center gap-[40px] md:gap-[80px] pb-[8vh] pointer-events-auto">
-                            <button
-                                onClick={showPrevPhoto}
-                                onMouseEnter={(e) => gsap.to(e.currentTarget, { x: -15, opacity: 1, duration: 0.4, ease: "power3.out" })}
-                                onMouseLeave={(e) => gsap.to(e.currentTarget, { x: 0, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
-                                className="text-[11px] md:text-[12px] font-bold tracking-[0.2em] uppercase text-[#111] opacity-40 outline-none border-none bg-transparent cursor-pointer py-4"
-                            >
-                                Left
-                            </button>
-
-                            <button
-                                onClick={closeLightbox}
-                                onMouseEnter={(e) => gsap.to(e.currentTarget, { rotate: 90, scale: 1.2, opacity: 1, duration: 0.5, ease: "back.out(1.5)" })}
-                                onMouseLeave={(e) => gsap.to(e.currentTarget, { rotate: 0, scale: 1, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
-                                className="text-[28px] md:text-[32px] font-light text-[#111] opacity-40 outline-none border-none bg-transparent flex items-center justify-center cursor-pointer p-2"
-                            >
-                                ✕
-                            </button>
-
-                            <button
-                                onClick={showNextPhoto}
-                                onMouseEnter={(e) => gsap.to(e.currentTarget, { x: 15, opacity: 1, duration: 0.4, ease: "power3.out" })}
-                                onMouseLeave={(e) => gsap.to(e.currentTarget, { x: 0, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
-                                className="text-[11px] md:text-[12px] font-bold tracking-[0.2em] uppercase text-[#111] opacity-40 outline-none border-none bg-transparent cursor-pointer py-4"
-                            >
-                                Right
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
+            {/* ВЫЗЫВАЕМ НАШ НОВЫЙ КОМПОНЕНТ ЛАЙТБОКСА! */}
+            <Lightbox
+                photos={product.photos}
+                currentIndex={fullscreenIdx}
+                setCurrentIndex={setFullscreenIdx}
+            />
 
             {/* SHARE POP-UP (MODAL) */}
             {isShareModalOpen && (
