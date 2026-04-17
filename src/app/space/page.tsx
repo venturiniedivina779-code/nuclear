@@ -15,11 +15,11 @@ export default function SpacePage() {
 
     // 3. ДОБАВЛЕННЫЙ БЛОК: Мгновенно прячем элементы при входе на страницу
     useEffect(() => {
-        gsap.set([".custom-home-btn", ".custom-nav", ".custom-vol"], { opacity: 0, y: 30 });
+        gsap.set([".custom-vol"], { opacity: 0, y: 30 });
 
         // Cleanup: когда страница умирает, стираем инлайн-стили
         return () => {
-            gsap.set([".custom-home-btn", ".custom-nav", ".custom-vol"], { clearProps: "all" });
+            gsap.set([".custom-vol"], { clearProps: "all" });
         };
     }, []);
     // 4. ТВОЙ КОД GSAP: Плавное появление после загрузки

@@ -9,11 +9,11 @@ export default function Home() {
 
   // 1. АНИМАЦИЯ ПОЯВЛЕНИЯ
   useEffect(() => {
-    gsap.set([".custom-home-btn", ".custom-nav", ".custom-vol"], { opacity: 0, y: 30 });
+    gsap.set([".custom-vol"], { opacity: 0, y: 30 });
 
     // Cleanup: когда страница умирает, стираем инлайн-стили
     return () => {
-      gsap.set([".custom-home-btn", ".custom-nav", ".custom-vol"], { clearProps: "all" });
+      gsap.set([".custom-vol"], { clearProps: "all" });
     };
   }, []);
 

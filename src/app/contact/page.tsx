@@ -17,7 +17,6 @@ const MagneticSocials = () => {
     ];
 
     return (
-        // Добавили opacity-0 и animate-stagger
         <div
             className="animate-stagger opacity-0 flex flex-row items-center gap-[40px] md:gap-[50px] lg:gap-[60px] xl:gap-[40px] mt-[40px] lg:mt-[50px] xl:mt-[40px] z-10 w-full"
             onMouseLeave={() => setHoveredIndex(null)}
@@ -61,25 +60,23 @@ export default function ContactPage() {
 
     // 1. ЕДИНЫЙ ЦИКЛ ЗАГРУЗКИ
     useEffect(() => {
-        // Прячем всё сразу в CSS и дополнительно через GSAP
-        gsap.set([".custom-home-btn", ".custom-nav", ".animate-stagger"], { opacity: 0, y: 20 });
+        gsap.set([".animate-stagger"], { opacity: 0, y: 20 });
 
         fetch('/relax.json')
             .then(response => response.json())
             .then(data => {
                 setRelaxAnimData(data);
-                // Ждем чуть-чуть, чтобы React «прожевал» данные анимации
                 setTimeout(() => {
                     setLoading(false);
                 }, 100);
             })
             .catch(error => {
                 console.error('Ошибка загрузки relax.json:', error);
-                setLoading(false); // В случае ошибки всё равно показываем страницу
+                setLoading(false);
             });
 
         return () => {
-            gsap.set([".custom-home-btn", ".custom-nav"], { clearProps: "all" });
+            gsap.set([".animate-stagger"], { clearProps: "all" });
         };
     }, []);
 
@@ -87,8 +84,8 @@ export default function ContactPage() {
     useEffect(() => {
         if (!loading && relaxAnimData) {
             let ctx = gsap.context(() => {
-                // Анимируем всё ОДНИМ списком
-                gsap.fromTo([".custom-home-btn", ".custom-nav", ".animate-stagger"],
+                // ИСПРАВЛЕНО: Убрали селекторы хедера, оставили только контент страницы
+                gsap.fromTo(".animate-stagger",
                     { y: 20, opacity: 0 },
                     {
                         y: 0,
@@ -110,7 +107,6 @@ export default function ContactPage() {
                 <div className="pointer-events-auto w-full h-full xl:w-[45%] flex flex-col px-[6vw] xl:pl-[4vw] xl:pr-0 pt-[16vh] md:pt-[20vh] xl:pt-[28vh] box-border">
                     <div className="w-full">
 
-                        {/* АНИМАЦИЯ (просто часть списка animate-stagger) */}
                         {relaxAnimData && (
                             <div className="animate-stagger opacity-0 w-[250px] md:w-[350px] lg:w-[450px] xl:w-[4.5vw] mb-6 md:mb-10 xl:mb-6 translate-x-[-15px] origin-left scale-[1.4] lg:scale-[1.7] xl:scale-[1.6]">
                                 <Lottie animationData={relaxAnimData} loop={true} />

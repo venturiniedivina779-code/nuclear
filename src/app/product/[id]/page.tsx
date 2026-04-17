@@ -7,7 +7,6 @@ import gsap from 'gsap';
 import Lottie from 'lottie-react';
 import { productsData, Product } from '../../../data/products';
 import { TransitionLink } from '../../../components/TransitionLink';
-// Импортируем наши чистые UI-компоненты
 import { Lightbox } from '../../../components/ui/Lightbox';
 import { ShareModal } from '../../../components/ui/ShareModal';
 
@@ -17,7 +16,6 @@ export default function ProductPage() {
     const productId = params.id ? params.id.toLowerCase() : 'pupsiko';
     const product: Product = productsData[productId] || productsData['pupsiko'];
 
-    // Вся логика модалок и галерей теперь сводится к этим двум простым состояниям!
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [fullscreenIdx, setFullscreenIdx] = useState<number | null>(null);
 
@@ -119,9 +117,10 @@ export default function ProductPage() {
                     if (scrollDiv) scrollDiv.scrollTop += e.deltaY;
                 }}
             >
+                {/* ВОТ ЗДЕСЬ ИСПРАВЛЕННЫЙ КЛАСС: product-left-panel */}
                 <div
                     ref={leftPanelRef}
-                    className="global-menu-wrapper flex flex-col justify-start lg:justify-center pointer-events-auto z-40 shrink-0 relative w-full h-auto pt-[12vh] pb-[8vh] px-[6vw] md:pt-[20vh] md:pb-[10vh] md:px-[60px] lg:fixed lg:top-0 lg:left-0 lg:w-[35%] lg:h-[100dvh] lg:py-[6vh] lg:px-[4vw] box-border"
+                    className="product-left-panel flex flex-col justify-start lg:justify-center pointer-events-auto z-40 shrink-0 relative w-full h-auto pt-[12vh] pb-[8vh] px-[6vw] md:pt-[20vh] md:pb-[10vh] md:px-[60px] lg:fixed lg:top-0 lg:left-0 lg:w-[35%] lg:h-[100dvh] lg:py-[6vh] lg:px-[4vw] box-border"
                 >
                     <div className="animate-stagger flex flex-col w-full max-w-[100%] lg:max-w-[90%] my-auto lg:m-auto">
 
@@ -139,20 +138,17 @@ export default function ProductPage() {
                             <span className="text-[14px] font-bold opacity-80 text-[#111]">Role: {product.role}</span>
                         </div>
 
-                        {/* Кнопка Share - теперь она просто меняет стейт! */}
                         <button
                             onClick={() => setIsShareModalOpen(true)}
-                            className="flex items-center justify-center gap-[10px] w-auto px-2 h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#dddddd] text-white hover:bg-[#ff6d6d]"
+                            className="flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#22c55e] text-white hover:bg-[#1eb053]"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
-                            <span style={{ transform: 'translateY(1px)' }}>Поделиться</span>
+                            <span style={{ transform: 'translateY(1px)' }}>Share</span>
                         </button>
 
-                        {/*
-                       
                         <TransitionLink
                             href="/project"
                             className="relative w-[60px] h-[60px] opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 self-start mt-8"
@@ -165,8 +161,6 @@ export default function ProductPage() {
                                 <span className="text-sm font-bold opacity-50">Back</span>
                             )}
                         </TransitionLink>
-                        
-                        */}
 
                     </div>
                 </div>
@@ -193,7 +187,6 @@ export default function ProductPage() {
                 </div>
             </div>
 
-            {/* ВЫЗЫВАЕМ НАШИ НЕЗАВИСИМЫЕ UI КОМПОНЕНТЫ */}
             <Lightbox
                 photos={product.photos}
                 currentIndex={fullscreenIdx}

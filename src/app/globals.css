@@ -92,9 +92,9 @@ input[type="range"]::-moz-range-thumb {
 
 .custom-nav {
   position: absolute;
-  top: 40px;
+
   left: 6vw;
-  gap: 16px;
+
 }
 
 .custom-insta {
@@ -128,10 +128,10 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .custom-nav {
-    top: 40px !important;
+
     left: auto !important;
     right: 40px !important;
-    gap: 30px !important;
+
   }
 
   .custom-insta {
@@ -353,7 +353,7 @@ input[type="range"]::-moz-range-thumb {
    ============================================================ */
 .custom-home-btn {
   position: absolute;
-  top: 40px;
+
   right: 6vw;
   /* На мобилке справа */
   z-index: 50;
@@ -362,7 +362,7 @@ input[type="range"]::-moz-range-thumb {
 /* ИСПРАВЛЕНО: Планшеты (от 768px) */
 @media (min-width: 1024px) {
   .custom-home-btn {
-    top: 40px !important;
+
     left: 60px !important;
     /* Выравниваем по левому краю текста */
     right: auto !important;
