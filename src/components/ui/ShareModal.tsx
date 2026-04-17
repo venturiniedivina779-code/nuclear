@@ -9,18 +9,17 @@ interface ShareModalProps {
 }
 
 export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
-    const [copyText, setCopyText] = useState("Copy");
+    // 1. Ставим правильные русские слова
+    const [copyText, setCopyText] = useState("Скопировать");
     const [currentUrl, setCurrentUrl] = useState("");
     const modalRef = useRef<HTMLDivElement>(null);
 
-    // Получаем актуальный URL только на клиенте
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setCurrentUrl(window.location.href);
         }
-    }, [isOpen]); // Обновляем ссылку каждый раз при открытии окна
+    }, [isOpen]);
 
-    // Анимация появления
     useEffect(() => {
         if (isOpen && modalRef.current) {
             gsap.fromTo(modalRef.current,
@@ -30,14 +29,14 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
         }
     }, [isOpen]);
 
-    // Анимация закрытия
     const handleClose = () => {
         if (!modalRef.current) return;
         gsap.to(modalRef.current, {
             opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: "power2.in",
             onComplete: () => {
-                onClose(); // Говорим родителю, что окно закрыто
-                setCopyText("Copy"); // Возвращаем текст кнопки в исходное состояние
+                onClose();
+                // 2. При закрытии возвращаем исходный текст
+                setCopyText("Скопировать");
             }
         });
     };
@@ -45,8 +44,9 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
     const handleCopyLink = async () => {
         try {
             await navigator.clipboard.writeText(currentUrl);
-            setCopyText("Copied");
-            setTimeout(() => setCopyText("Copy"), 2000);
+            // 3. Текст при успешном копировании
+            setCopyText("Скопировано!");
+            setTimeout(() => setCopyText("Скопировать"), 2000);
         } catch (err) {
             console.error('Failed to copy: ', err);
         }
@@ -61,9 +61,8 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
             <div
                 ref={modalRef}
                 className="bg-[#f5f5f5] text-[#111] p-[30px] md:p-[40px] flex flex-col shadow-2xl relative w-[90%] max-w-[500px] rounded-[30px] box-border"
-                onClick={(e) => e.stopPropagation()} // Чтобы клик по самому окну не закрывал его
+                onClick={(e) => e.stopPropagation()}
             >
-                {/* ШАПКА */}
                 <div className="flex justify-between items-center w-full mb-[25px]">
                     <h3 className="text-[22px] md:text-[26px] font-medium text-[#111] m-0 leading-none">
                         Project Link
@@ -76,23 +75,22 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                     </button>
                 </div>
 
-                {/* ПОЛЕ СО ССЫЛКОЙ */}
                 <div className="w-full bg-[#ffffff] h-[60px] rounded-[16px] px-[20px] mb-[30px] flex items-center box-border overflow-hidden">
                     <p className="text-[16px] font-medium text-[#111] truncate select-all outline-none w-full">
                         {currentUrl}
                     </p>
                 </div>
 
-                {/* КНОПКА COPY */}
                 <div className="flex justify-start w-full">
+                    {/* 4. Вот твоя кнопка! Заменили w-[160px] на w-auto px-8 и обновили логику проверки на русское слово */}
                     <button
                         onClick={handleCopyLink}
-                        className={`flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer ${copyText === "Copy"
-                                ? "bg-[#ebebeb] text-[#111] hover:bg-[#ff6d6d] hover:text-[#ebebeb]"
-                                : "bg-[#22c55e] text-white"
+                        className={`flex items-center justify-center gap-[10px] w-full h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer ${copyText === "Скопировать"
+                            ? "bg-[#ebebeb] text-[#111] hover:bg-[#ff6d6d] hover:text-[#ebebeb]"
+                            : "bg-[#dddddd] text-white"
                             }`}
                     >
-                        {copyText === "Copy" ? (
+                        {copyText === "Скопировать" ? (
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>

@@ -437,9 +437,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Прячем элементы хедера, чтобы они не мелькали под лоадером */
 .custom-home-btn,
-.custom-nav {
-  opacity: 0;
-}
+.custom-nav {}
 
 /* Добавь это, чтобы гарантировать порядок слоев */
 header,

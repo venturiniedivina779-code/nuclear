@@ -142,15 +142,17 @@ export default function ProductPage() {
                         {/* Кнопка Share - теперь она просто меняет стейт! */}
                         <button
                             onClick={() => setIsShareModalOpen(true)}
-                            className="flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#22c55e] text-white hover:bg-[#1eb053]"
+                            className="flex items-center justify-center gap-[10px] w-auto px-2 h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#dddddd] text-white hover:bg-[#ff6d6d]"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
-                            <span style={{ transform: 'translateY(1px)' }}>Share</span>
+                            <span style={{ transform: 'translateY(1px)' }}>Поделиться</span>
                         </button>
 
+                        {/*
+                       
                         <TransitionLink
                             href="/project"
                             className="relative w-[60px] h-[60px] opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 self-start mt-8"
@@ -163,6 +165,8 @@ export default function ProductPage() {
                                 <span className="text-sm font-bold opacity-50">Back</span>
                             )}
                         </TransitionLink>
+                        
+                        */}
 
                     </div>
                 </div>
