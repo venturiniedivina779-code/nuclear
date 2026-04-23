@@ -20,6 +20,9 @@ export default function Template({ children }: { children: React.ReactNode }) {
                 delay: 0.1 // Минимальная задержка, чтобы браузер успел отрисовать шрифты
             }
         );
+        return () => {
+            gsap.killTweensOf(containerRef.current);
+        };
     }, [pathname]);
 
     return (

@@ -13,8 +13,8 @@ export default function CustomCursor() {
 
         if (dotRef.current) {
             gsap.set(dotRef.current, {
-                x: e.clientX,
-                y: e.clientY,
+                x: cursorPos.current.x + 5,
+                y: cursorPos.current.y + 12,
             });
         }
     }, []);
@@ -64,7 +64,7 @@ export default function CustomCursor() {
                     ease: 'power2.out'
                 });
 
-                if (starRef.current) gsap.to(starRef.current, { scale: 2.5, duration: 0.3 });
+                if (starRef.current) gsap.to(starRef.current, { scale: 2.5, rotate: 45, duration: 0.3 });
             }
         };
 
@@ -80,7 +80,7 @@ export default function CustomCursor() {
                     ease: 'power2.out'
                 });
 
-                if (starRef.current) gsap.to(starRef.current, { scale: 1, duration: 0.3 });
+                if (starRef.current) gsap.to(starRef.current, { scale: 1, rotate: 0, duration: 0.3 });
             }
         };
 
@@ -108,7 +108,7 @@ export default function CustomCursor() {
                 ref={starRef}
                 className="fixed top-0 left-0 z-[9999] pointer-events-none hidden lg:block"
             >
-                <span style={{ fontSize: '58px', color: '#ff69b4', lineHeight: 1 }}>✹</span>
+                <span style={{ fontSize: '58px', color: '#ff5f24ff', lineHeight: 1 }}>✹</span>
             </div>
         </>
     );

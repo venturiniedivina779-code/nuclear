@@ -13,6 +13,15 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
     const [copyText, setCopyText] = useState("Скопировать");
     const [currentUrl, setCurrentUrl] = useState("");
     const modalRef = useRef<HTMLDivElement>(null);
+    const copyTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Очистка таймера и GSAP-твинов при размонтировании
+    useEffect(() => {
+        return () => {
+            if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+            if (modalRef.current) gsap.killTweensOf(modalRef.current);
+        };
+    }, []);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -46,7 +55,8 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
             await navigator.clipboard.writeText(currentUrl);
             // 3. Текст при успешном копировании
             setCopyText("Скопировано!");
-            setTimeout(() => setCopyText("Скопировать"), 2000);
+            if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+            copyTimerRef.current = setTimeout(() => setCopyText("Скопировать"), 2000);
         } catch (err) {
             console.error('Failed to copy: ', err);
         }

@@ -1,32 +1,28 @@
 'use client';
 
-// 1. ВСЕ ИМПОРТЫ СТРОГО В САМОМ ВЕРХУ
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Preloader } from '@/components/Preloader';
 
 export default function SpacePage() {
-    // 2. ВСЕ ТВОИ СТЕЙТЫ (вернули их на место)
     const [loading, setLoading] = useState(true);
     const [volume, setVolume] = useState(0);
     const lastVolumeRef = useRef(0.5);
     const videoRef = useRef<HTMLVideoElement>(null);
 
-    // 3. ДОБАВЛЕННЫЙ БЛОК: Мгновенно прячем элементы при входе на страницу
+    // Мгновенно прячем элементы при входе на страницу
     useEffect(() => {
-        gsap.set([".custom-vol"], { opacity: 0, y: 30 });
-
-        // Cleanup: когда страница умирает, стираем инлайн-стили
+        gsap.set([".custom-vol", ".custom-insta", ".custom-tg", ".custom-behance"], { opacity: 0, y: 30 });
         return () => {
-            gsap.set([".custom-vol"], { clearProps: "all" });
+            gsap.set([".custom-vol", ".custom-insta", ".custom-tg", ".custom-behance"], { clearProps: "all" });
         };
     }, []);
-    // 4. ТВОЙ КОД GSAP: Плавное появление после загрузки
+
+    // GSAP: Плавное появление после загрузки
     useEffect(() => {
         if (!loading) {
             const selectors = [".custom-home-btn", ".custom-nav", ".space-fade", ".animate-up"];
-
             gsap.fromTo(selectors,
                 { y: 30, opacity: 0 },
                 {
@@ -38,10 +34,14 @@ export default function SpacePage() {
                     delay: 0.2
                 }
             );
+
+            return () => {
+                gsap.killTweensOf(selectors);
+            };
         }
     }, [loading]);
 
-    // ЛОГИКА ЗВУКА (оставляем без изменений)
+    // ЛОГИКА ЗВУКА
     useEffect(() => {
         if (videoRef.current) {
             videoRef.current.volume = volume;
@@ -67,10 +67,9 @@ export default function SpacePage() {
     };
 
     return (
-        // Используем <main>, так семантически правильнее
         <main className="fixed inset-0 w-full h-[100dvh] bg-[#111] text-[#ebebeb] overflow-hidden z-[60]">
 
-            {/* ====== ЭКРАН ЗАГРУЗКИ (Лоадер) ====== */}
+            {/* ====== ЭКРАН ЗАГРУЗКИ (Вызов компонента) ====== */}
             <Preloader
                 variant="space"
                 isLoading={loading}
@@ -92,7 +91,7 @@ export default function SpacePage() {
             <div className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none blend-exclusion">
 
                 {/* БЕГУНОК ГРОМКОСТИ */}
-                <div className="custom-vol pointer-events-auto flex items-center gap-4 animate-up opacity-0 absolute top-1/2 left-[6vw] -translate-y-1/2">
+                <div className="custom-vol pointer-events-auto flex items-center gap-4 animate-up opacity-0 absolute top-3/4 left-[6vw] -translate-y-1/2">
                     <button onClick={muteVolume} className="bg-transparent border-none text-[#ebebeb] hover:text-[#ebebeb]/70 transition-colors cursor-pointer outline-none flex items-center justify-center p-2">
                         <VolumeX size={18} />
                     </button>
@@ -113,14 +112,54 @@ export default function SpacePage() {
                 </div>
 
                 {/* СОЦИАЛЬНЫЕ СЕТИ */}
-                <div className="custom-insta pointer-events-auto animate-up opacity-0 absolute bottom-[16vh] left-[6vw]">
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                        className="no-underline outline-none text-sm font-bold tracking-widest !text-[#ebebeb] hover:opacity-70 transition-opacity">
-                        instagram
+                <div className="custom-insta pointer-events-auto animate-up opacity-0">
+                    <a href="https://www.instagram.com/gardennuclear/" target="_blank" rel="noopener noreferrer"
+                        className="group inline-block p-[15px] -m-[15px] no-underline outline-none cursor-pointer">
+                        <div className="overflow-hidden" style={{ position: 'relative', height: '20px', display: 'block' }}>
+                            <div className="transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-1/2 flex flex-col">
+                                <span className="text-[15px] lg:text-sm font-bold tracking-widest text-[#ebebeb] flex items-center" style={{ height: '20px', whiteSpace: 'nowrap' }}>
+                                    instagram
+                                </span>
+                                <span className="text-[15px] lg:text-sm font-bold tracking-widest text-[#ebebeb] flex items-center" style={{ height: '20px', whiteSpace: 'nowrap' }}>
+                                    instagram
+                                </span>
+                            </div>
+                        </div>
                     </a>
                 </div>
 
-                {/* ...Остальные соцсети по аналогии... */}
+                <div className="custom-tg pointer-events-auto animate-up opacity-0">
+                    <a href="https://t.me" target="_blank" rel="noopener noreferrer"
+                        className="group inline-block p-[15px] -m-[15px] no-underline outline-none cursor-pointer">
+                        <div className="overflow-hidden" style={{ position: 'relative', height: '20px', display: 'block' }}>
+                            <div className="transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-1/2 flex flex-col">
+                                <span className="text-[15px] lg:text-sm font-bold tracking-widest text-[#ebebeb] flex items-center" style={{ height: '20px', whiteSpace: 'nowrap' }}>
+                                    telegram
+                                </span>
+                                <span className="text-[15px] lg:text-sm font-bold tracking-widest text-[#ebebeb] flex items-center" style={{ height: '20px', whiteSpace: 'nowrap' }}>
+                                    telegram
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div className="custom-behance pointer-events-auto animate-up opacity-0">
+                    <a href="https://www.behance.net/" target="_blank" rel="noopener noreferrer"
+                        className="group inline-block p-[15px] -m-[15px] no-underline outline-none cursor-pointer">
+                        <div className="overflow-hidden" style={{ position: 'relative', height: '20px', display: 'block' }}>
+                            <div className="transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-1/2 flex flex-col">
+                                <span className="text-[15px] lg:text-sm font-bold tracking-widest text-[#ebebeb] flex items-center" style={{ height: '20px', whiteSpace: 'nowrap' }}>
+                                    behance
+                                </span>
+                                <span className="text-[15px] lg:text-sm font-bold tracking-widest text-[#ebebeb] flex items-center" style={{ height: '20px', whiteSpace: 'nowrap' }}>
+                                    behance
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
             </div>
         </main>
     );

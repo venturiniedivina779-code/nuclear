@@ -5,6 +5,22 @@
 :root {
   --background: #ebebeb;
   --foreground: #ebebeb;
+  --title-size: 60px;
+  --desc-size: 16px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --title-size: 80px;
+    --desc-size: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --title-size: 100px;
+    --desc-size: 25px;
+  }
 }
 
 body {
@@ -99,14 +115,17 @@ input[type="range"]::-moz-range-thumb {
 
 .custom-insta {
   position: absolute;
-  bottom: 80px;
+  bottom: 15vh;
+  /* ПОДНИМАЕМ ИНСТАГРАМ: меняй эту цифру (было 80px) */
   left: 6vw;
 }
 
 .custom-tg {
   position: absolute;
-  bottom: 80px;
-  right: 6vw;
+  bottom: 15vh;
+  /* ПОДНИМАЕМ ТЕЛЕГРАМ: делай цифру как у инсты */
+  left: 35vw;
+  /* СДВИГАЕМ ВЛЕВО: мы убрали right, и добавили left. Уменьшай цифру (например 25vw), чтобы придвинуть ближе к инсте */
 }
 
 .custom-behance {
@@ -158,7 +177,7 @@ input[type="range"]::-moz-range-thumb {
    ПРИНУДИТЕЛЬНЫЙ АДАПТИВ ТЕКСТА (ГЛАВНАЯ СТРАНИЦА)
    ============================================================ */
 
-/* ИСПРАВЛЕНО: Планшеты (от 768px) */
+/* Планшеты (от 768px) */
 @media (min-width: 768px) {
   .md\:w-\[55vw\] {
     width: 55vw !important;
@@ -175,26 +194,10 @@ input[type="range"]::-moz-range-thumb {
   .md\:left-\[22vw\] {
     left: 22vw !important;
   }
-
-  .md\:text-\[2\.6vw\] {
-    font-size: 2.6vw !important;
-  }
 }
 
 /* Десктопы (от 1024px) */
 @media (min-width: 1024px) {
-  .lg\:text-\[4\.5vw\] {
-    font-size: 4.5vw !important;
-  }
-
-  .lg\:text-\[1\.8vw\] {
-    font-size: 1.8vw !important;
-  }
-
-  .lg\:text-\[0\.7vw\] {
-    font-size: 0.7vw !important;
-  }
-
   .lg\:w-\[50vw\] {
     width: 50vw !important;
   }
@@ -260,7 +263,7 @@ input[type="range"]::-moz-range-thumb {
    ПРИНУДИТЕЛЬНЫЙ АДАПТИВ ДЛЯ PROJECT PAGE 
    ============================================================ */
 
-/* ИСПРАВЛЕНО: Планшеты (от 768px) */
+/* ИСПРАВЛЕДНО: Планшеты (от 768px) */
 @media (min-width: 768px) {
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -443,6 +446,7 @@ input[type="range"]::-moz-range-thumb {
 header,
 .global-menu-wrapper {
   z-index: 100 !important;
+  isolation: auto !important;
 }
 
 /* Лоадер ВСЕГДА должен быть выше */

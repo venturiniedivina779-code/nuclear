@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import gsap from 'gsap';
-import Lottie from 'lottie-react';
-import { productsData, Product } from '../../../data/products';
+// Импортируем нашу обновленную базу и хелперы
+import { products, getProductById, getGalleryImagePaths } from '../../../data/products';
 import { TransitionLink } from '../../../components/TransitionLink';
 import { Lightbox } from '../../../components/ui/Lightbox';
 import { ShareModal } from '../../../components/ui/ShareModal';
@@ -14,13 +14,17 @@ export default function ProductPage() {
     const params = useParams<{ id: string }>();
 
     const productId = params.id ? params.id.toLowerCase() : 'pupsiko';
-    const product: Product = productsData[productId] || productsData['pupsiko'];
+    // Ищем продукт в новом массиве с помощью функции-хелпера
+    // Если по какой-то причине URL неверный, берем первый попавшийся как fallback
+    const product = getProductById(productId) || products[0];
+
+    // Генерируем массив путей к картинкам для этого продукта (image1.png, image2.png...)
+    const galleryPhotos = product ? getGalleryImagePaths(product.folderId, product.galleryImagesCount) : [];
 
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [fullscreenIdx, setFullscreenIdx] = useState<number | null>(null);
 
     const contentHeightRef = useRef<HTMLDivElement>(null);
-    const [arrowAnimData, setArrowAnimData] = useState<any>(null);
 
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightContentRef = useRef<HTMLDivElement>(null);
@@ -43,14 +47,17 @@ export default function ProductPage() {
                 );
             }
 
+            const quickX = customCursorRef.current
+                ? gsap.quickTo(customCursorRef.current, "x", { duration: 0.5, ease: 'power3.out' })
+                : null;
+            const quickY = customCursorRef.current
+                ? gsap.quickTo(customCursorRef.current, "y", { duration: 0.5, ease: 'power3.out' })
+                : null;
+
             renderTick = () => {
-                if (customCursorRef.current) {
-                    gsap.to(customCursorRef.current, {
-                        x: cursorPos.current.x,
-                        y: cursorPos.current.y,
-                        duration: 0.5,
-                        ease: 'power3.out',
-                    });
+                if (quickX && quickY) {
+                    quickX(cursorPos.current.x);
+                    quickY(cursorPos.current.y);
                 }
 
                 scrollState.current.current += (scrollState.current.target - scrollState.current.current) * 0.08;
@@ -99,6 +106,9 @@ export default function ProductPage() {
         };
     }, []);
 
+    // Предотвращаем рендер, если продукт почему-то не найден
+    if (!product) return null;
+
     return (
         <div ref={containerRef} className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
 
@@ -117,16 +127,21 @@ export default function ProductPage() {
                     if (scrollDiv) scrollDiv.scrollTop += e.deltaY;
                 }}
             >
-                {/* ВОТ ЗДЕСЬ ИСПРАВЛЕННЫЙ КЛАСС: product-left-panel */}
                 <div
                     ref={leftPanelRef}
                     className="product-left-panel flex flex-col justify-start lg:justify-center pointer-events-auto z-40 shrink-0 relative w-full h-auto pt-[12vh] pb-[8vh] px-[6vw] md:pt-[20vh] md:pb-[10vh] md:px-[60px] lg:fixed lg:top-0 lg:left-0 lg:w-[35%] lg:h-[100dvh] lg:py-[6vh] lg:px-[4vw] box-border"
                 >
                     <div className="animate-stagger flex flex-col w-full max-w-[100%] lg:max-w-[90%] my-auto lg:m-auto">
 
-                        <h2 className="text-[32px] md:text-[40px] lg:text-[3.5vw] font-bold tracking-tighter leading-none mb-[30px] text-[#111]">
+                        <h2 className="text-[32px] md:text-[40px] lg:text-[3.5vw] font-bold tracking-tighter leading-none mb-[20px] text-[#111]">
                             {product.title}
                         </h2>
+
+                        {product.price && (
+                            <h3 className="inline-block bg-[#f4f4f4] px-[18px] py-[8px] rounded-[8px] text-[#111] font-bold text-[22px] mb-[30px] self-start shadow-sm">
+                                {product.price}
+                            </h3>
+                        )}
 
                         <p className="text-[20px] md:text-lg lg:text-[1.2vw] font-medium leading-[1.6] opacity-90 mb-[50px] text-[#111]">
                             {product.description}
@@ -138,28 +153,45 @@ export default function ProductPage() {
                             <span className="text-[14px] font-bold opacity-80 text-[#111]">Role: {product.role}</span>
                         </div>
 
-                        <button
-                            onClick={() => setIsShareModalOpen(true)}
-                            className="flex items-center justify-center gap-[10px] w-[160px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#22c55e] text-white hover:bg-[#1eb053]"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            <span style={{ transform: 'translateY(1px)' }}>Share</span>
-                        </button>
+                        <div className="flex items-center gap-[15px] w-full">
+                            {/* Новая кнопка "Написать" */}
+                            <a
+                                href="https://t.me/ВАША_ГРУППА" // <-- Вставьте сюда ссылку на вашу группу
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-[10px] w-auto px-[24px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#dddddd] text-[#111] hover:text-white hover:bg-[#ff6d6d] no-underline"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                <span style={{ transform: 'translateY(1px)' }}>Написать</span>
+                            </a>
+
+                            {/* Ваша оригинальная кнопка "Поделиться" */}
+                            <button
+                                onClick={() => setIsShareModalOpen(true)}
+                                className="flex items-center justify-center gap-[10px] w-auto px-[24px] h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer bg-[#dddddd] text-[#111] hover:text-white hover:bg-[#ff6d6d]"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span style={{ transform: 'translateY(1px)' }}>Поделиться</span>
+                            </button>
+                        </div>
 
                         <TransitionLink
                             href="/project"
-                            className="relative w-[60px] h-[60px] opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 self-start mt-8"
+                            className="relative opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 top-[50px] self-start mt-8"
                         >
-                            {arrowAnimData ? (
-                                <div className="absolute w-[300px] h-[300px] lg:w-[400px] lg:h-[400px] scale-x-[-1] rotate-90 translate-x-[15px] pointer-events-none flex items-center justify-center">
-                                    <Lottie animationData={arrowAnimData} loop={true} />
-                                </div>
-                            ) : (
-                                <span className="text-sm font-bold opacity-50">Back</span>
-                            )}
+                            {/* Вы можете редактировать параметр scale(1) ниже, чтобы настроить размер SVG */}
+                            <img
+                                src="/label_03.svg"
+                                alt="Back to projects"
+                                style={{ transform: 'scale(1.5)', transformOrigin: 'center left' }}
+                                className="block w-[120px] h-auto object-contain"
+                            />
                         </TransitionLink>
 
                     </div>
@@ -171,14 +203,15 @@ export default function ProductPage() {
                 >
                     <div className="max-w-[1200px] mx-auto w-full">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-[25px] lg:gap-[20px] w-full">
-                            {product.photos.map((src: string, index: number) => (
+                            {/* Рендерим галерею, используя новый сгенерированный массив galleryPhotos */}
+                            {galleryPhotos.map((src: string, index: number) => (
                                 <div
                                     key={index}
                                     onClick={() => setFullscreenIdx(index)}
                                     className="cursor-pointer group relative bg-[#e3e3e3] aspect-square overflow-hidden shadow-sm w-full"
                                 >
                                     <div className="w-full h-full flex items-center justify-center transition-transform duration-700 ease group-hover:scale-[1.05]">
-                                        <Image src={src} alt={`${product.title} ${index}`} width={800} height={800} className="w-full h-full object-cover" />
+                                        <Image src={src} alt={`${product.title} photo ${index + 1}`} width={800} height={800} className="w-full h-full object-cover" />
                                     </div>
                                 </div>
                             ))}
@@ -188,7 +221,7 @@ export default function ProductPage() {
             </div>
 
             <Lightbox
-                photos={product.photos}
+                photos={galleryPhotos}
                 currentIndex={fullscreenIdx}
                 setCurrentIndex={setFullscreenIdx}
             />

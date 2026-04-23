@@ -3,14 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import Lottie from 'lottie-react';
-import { usePathname } from 'next/navigation';
 
 // --- КОМПОНЕНТ "МАГНИТНЫЕ" СОЦСЕТИ ---
 const MagneticSocials = () => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
     const items = [
-        { id: 1, name: 'Instagram', url: 'https://instagram.com', icon: '/icons/instagram.svg', iconColor: '/icons/instagram_color.svg' },
+        { id: 1, name: 'Instagram', url: 'https://www.instagram.com/gardennuclear/', icon: '/icons/instagram.svg', iconColor: '/icons/instagram_color.svg' },
         { id: 2, name: 'Telegram', url: 'https://t.me', icon: '/icons/telegram.svg', iconColor: '/icons/telegram_color.svg' },
         { id: 3, name: 'YouTube', url: 'https://youtube.com', icon: '/icons/youtube.svg', iconColor: '/icons/youtube_color.svg' },
         { id: 4, name: 'Behance', url: 'https://behance.net', icon: '/icons/behance.svg', iconColor: '/icons/behance.svg' }
@@ -18,7 +17,7 @@ const MagneticSocials = () => {
 
     return (
         <div
-            className="animate-stagger opacity-0 flex flex-row items-center gap-[40px] md:gap-[50px] lg:gap-[60px] xl:gap-[40px] mt-[40px] lg:mt-[50px] xl:mt-[40px] z-10 w-full"
+            className="animate-stagger opacity-0 flex flex-row items-center gap-[10px] md:gap-[20px] lg:gap-[30px] xl:gap-[10px] mt-[40px] lg:mt-[50px] xl:mt-[40px] z-10 w-max -ml-[15px]"
             onMouseLeave={() => setHoveredIndex(null)}
         >
             {items.map((item, index) => {
@@ -43,9 +42,11 @@ const MagneticSocials = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         onMouseEnter={() => setHoveredIndex(index)}
-                        className={`transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${transformClass} outline-none cursor-pointer block w-[32px] h-[32px] md:w-[40px] md:h-[40px] lg:w-[48px] lg:h-[48px] xl:w-[32px] xl:h-[32px] shrink-0`}
+                        className="outline-none cursor-pointer block shrink-0 p-[15px]"
                     >
-                        <img src={currentIcon} alt={item.name} className="w-full h-full object-contain pointer-events-none" />
+                        <div className={`transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${transformClass} w-[32px] h-[32px] md:w-[40px] md:h-[40px] lg:w-[48px] lg:h-[48px] xl:w-[32px] xl:h-[32px]`}>
+                            <img src={currentIcon} alt={item.name} className="w-full h-full object-contain pointer-events-none" />
+                        </div>
                     </a>
                 );
             })}
@@ -56,7 +57,7 @@ const MagneticSocials = () => {
 export default function ContactPage() {
     const [loading, setLoading] = useState(true);
     const [relaxAnimData, setRelaxAnimData] = useState<any>(null);
-    const pathname = usePathname();
+    const loadTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // 1. ЕДИНЫЙ ЦИКЛ ЗАГРУЗКИ
     useEffect(() => {
@@ -66,7 +67,7 @@ export default function ContactPage() {
             .then(response => response.json())
             .then(data => {
                 setRelaxAnimData(data);
-                setTimeout(() => {
+                loadTimerRef.current = setTimeout(() => {
                     setLoading(false);
                 }, 100);
             })
@@ -76,6 +77,7 @@ export default function ContactPage() {
             });
 
         return () => {
+            if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             gsap.set([".animate-stagger"], { clearProps: "all" });
         };
     }, []);

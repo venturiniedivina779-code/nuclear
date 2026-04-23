@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import Image from 'next/image';
 import { TransitionLink } from '../../components/TransitionLink';
-// Импортируем нашу новую базу данных!
-import { productsData } from '../../data/products';
+import { products, getPreviewImagePath, getAllTags } from '../../data/products';
 
 export default function ProjectPage() {
     const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -16,8 +15,23 @@ export default function ProjectPage() {
     const scrollState = useRef({ target: 0, current: 0 });
     const [contentHeight, setContentHeight] = useState(2000);
 
-    // Превращаем объект productsData в массив для удобного рендера
-    const productsList = Object.values(productsData);
+    // Состояние для активного фильтра (хэштега)
+    const [activeFilter, setActiveFilter] = useState<string | null>(null);
+    const [hoveredTagIndex, setHoveredTagIndex] = useState<number | null>(null); // <-- ДОБАВИТЬ ЭТО
+
+    // Получаем все доступные уникальные теги
+    const allTags = getAllTags();
+
+    // Собираем все кнопки в один массив
+    const filterItems = [
+        { label: 'Все', value: null },
+        ...allTags.map(tag => ({ label: tag, value: tag }))
+    ];
+
+    // Фильтруем продукты (добавил проверку p.tags на всякий случай, если у кого-то нет тегов)
+    const filteredProducts = activeFilter
+        ? products.filter(p => p.tags && p.tags.includes(activeFilter))
+        : products;
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -35,14 +49,17 @@ export default function ProjectPage() {
                 { y: 0, opacity: 1, duration: 1.2, stagger: 0.1, ease: "power4.out" }
             );
 
+            const quickX = customCursorRef.current
+                ? gsap.quickTo(customCursorRef.current, "x", { duration: 0.5, ease: 'power3.out' })
+                : null;
+            const quickY = customCursorRef.current
+                ? gsap.quickTo(customCursorRef.current, "y", { duration: 0.5, ease: 'power3.out' })
+                : null;
+
             const renderTick = () => {
-                if (customCursorRef.current) {
-                    gsap.to(customCursorRef.current, {
-                        x: cursorPos.current.x,
-                        y: cursorPos.current.y,
-                        duration: 0.5,
-                        ease: 'power3.out',
-                    });
+                if (quickX && quickY) {
+                    quickX(cursorPos.current.x);
+                    quickY(cursorPos.current.y);
                 }
 
                 scrollState.current.current += (scrollState.current.target - scrollState.current.current) * 0.08;
@@ -64,6 +81,8 @@ export default function ProjectPage() {
                 }
 
                 // Анимация появления карточек при скролле
+                // GSAP будет каждый кадр искать актуальные карточки, 
+                // что идеально работает вместе с нашей фильтрацией
                 if (rightContentRef.current) {
                     const viewportH = window.innerHeight;
                     const cards = rightContentRef.current.querySelectorAll('.product-card');
@@ -165,6 +184,52 @@ export default function ProjectPage() {
                                 Role: UI/UX & Layout
                             </span>
                         </div>
+
+                        {/* Хэштеги / Фильтры с резиновым эффектом */}
+                        <div
+                            className="flex flex-wrap items-center gap-[10px] mt-[30px] -ml-[10px] pl-[10px] py-[10px]"
+                            onMouseLeave={() => setHoveredTagIndex(null)}
+                        >
+                            {filterItems.map((item, index) => {
+                                // Базовые стили: цвет фона и текста зависит от того, активен ли этот фильтр
+                                const isActive = activeFilter === item.value;
+                                let bgTextClass = isActive ? 'bg-[#d1d1d1] text-[#111]' : 'bg-[#f4f4f4] text-[#111]';
+                                let opacityClass = isActive ? 'opacity-100' : 'opacity-80';
+                                let transformClass = 'translate-x-0 scale-100 z-0';
+
+                                // Логика "резинового" раздвигания при наведении
+                                if (hoveredTagIndex !== null) {
+                                    if (index === hoveredTagIndex) {
+                                        // Наведенный элемент слегка увеличивается
+                                        transformClass = 'scale-[1.1] z-10';
+                                        opacityClass = 'opacity-100';
+                                    } else if (index < hoveredTagIndex) {
+                                        // Все что слева - уезжает влево и тускнеет
+                                        transformClass = '-translate-x-[15px] scale-95 z-0';
+                                        opacityClass = 'opacity-40';
+                                    } else if (index > hoveredTagIndex) {
+                                        // Все что справа - уезжает вправо и тускнеет
+                                        transformClass = 'translate-x-[15px] scale-95 z-0';
+                                        opacityClass = 'opacity-40';
+                                    }
+                                }
+
+                                return (
+                                    <a
+                                        key={item.label}
+                                        onMouseEnter={() => setHoveredTagIndex(index)}
+                                        onClick={() => {
+                                            setActiveFilter(item.value);
+                                            const scrollDiv = document.getElementById('project-scroll-track');
+                                            if (scrollDiv) scrollDiv.scrollTop = 0;
+                                        }}
+                                        className={`p-[15px] rounded-[6px] text-[14px] md:text-[24px] font-extrabold tracking-tight shadow-sm flex items-center justify-center leading-none m-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] cursor-pointer select-none block shrink-0 ${bgTextClass} ${opacityClass} ${transformClass}`}
+                                    >
+                                        {item.label}
+                                    </a>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 
@@ -173,24 +238,40 @@ export default function ProjectPage() {
                     className="pointer-events-auto shrink-0 relative w-full h-auto px-[6vw] md:px-[60px] pb-[10vh] lg:absolute lg:top-[150px] lg:left-[35%] lg:w-[65%] lg:p-[4vw] lg:pt-0 box-border overflow-hidden lg:overflow-visible"
                 >
                     <div className="max-w-[1200px] mx-auto w-full">
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[25px] lg:gap-[20px] w-full">
-                            {/* Рендерим карточки на основе базы данных */}
-                            {productsList.map((product) => (
-                                <TransitionLink
-                                    key={product.id}
-                                    href={`/product/${product.id}`}
-                                    className="product-card cursor-pointer group relative bg-[#e3e3e3] aspect-square overflow-hidden opacity-0 shadow-sm w-full block"
-                                >
-                                    <h3 className="absolute top-[20px] left-[20px] z-10 text-[20px] md:text-[18px] font-semibold tracking-tight text-[#111] pointer-events-none">
-                                        {product.title}
-                                    </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-[25px] lg:gap-[20px] w-full">
 
-                                    <div className="w-full h-full flex items-center justify-center transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-[1.1]">
-                                        {/* Используем первое фото из массива фотографий продукта */}
-                                        <Image src={product.photos[0]} alt={product.title} width={400} height={400} className="max-w-[70%] max-h-[70%] object-contain drop-shadow-lg" />
-                                    </div>
-                                </TransitionLink>
-                            ))}
+                            {filteredProducts.map((product) => {
+                                const previewImage = getPreviewImagePath(product.folderId);
+                                return (
+                                    <TransitionLink
+                                        key={product.id}
+                                        href={`/product/${product.id}`}
+                                        className="product-card cursor-pointer group relative bg-[#e3e3e3] aspect-square overflow-hidden opacity-0 shadow-sm w-full block"
+                                    >
+                                        <div className="absolute top-[0px] md:top-[20px] left-[20px] z-10 flex flex-wrap gap-[10px] items-center pointer-events-none pr-[20px]">
+                                            <h3 className="bg-[#f4f4f4] h-[40px] px-[14px] rounded-[8px] text-[16px] md:text-[24px] font-extrabold tracking-tight text-[#111] shadow-sm flex items-center justify-center leading-none m-0">
+                                                {product.title}
+                                            </h3>
+
+                                            {product.price && (
+                                                <h3 className="bg-[#f4f4f4] h-[40px] px-[18px] rounded-[8px] text-[16px] md:text-[24px] font-extrabold tracking-tight text-[#111] shadow-sm flex items-center justify-center leading-none m-0">
+                                                    {product.price}
+                                                </h3>
+                                            )}
+                                        </div>
+
+                                        <div className="relative w-full h-full overflow-hidden transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:scale-[1.1]">
+                                            <Image
+                                                src={previewImage}
+                                                alt={product.title}
+                                                fill
+                                                sizes="(max-width: 768px) 100vw, 400px"
+                                                className="object-cover drop-shadow-lg"
+                                            />
+                                        </div>
+                                    </TransitionLink>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

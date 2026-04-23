@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
 
@@ -12,6 +12,14 @@ interface LightboxProps {
 
 export const Lightbox = ({ photos, currentIndex, setCurrentIndex }: LightboxProps) => {
     const [isClosing, setIsClosing] = useState(false);
+    const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Очистка таймера при размонтировании
+    useEffect(() => {
+        return () => {
+            if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+        };
+    }, []);
 
     // Блокировка скролла страницы, когда Лайтбокс открыт
     useEffect(() => {
@@ -27,7 +35,8 @@ export const Lightbox = ({ photos, currentIndex, setCurrentIndex }: LightboxProp
     const closeLightbox = useCallback((e?: React.MouseEvent | KeyboardEvent) => {
         e?.stopPropagation();
         setIsClosing(true);
-        setTimeout(() => {
+        if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = setTimeout(() => {
             setCurrentIndex(null);
             setIsClosing(false);
         }, 300);
@@ -74,32 +83,32 @@ export const Lightbox = ({ photos, currentIndex, setCurrentIndex }: LightboxProp
                         />
                     </div>
 
-                    <div className="mt-auto w-full flex items-center justify-center gap-[40px] md:gap-[80px] pb-[8vh] pointer-events-auto">
+                    <div className="mt-auto w-full flex items-center justify-center gap-[10px] pb-[8vh] pointer-events-auto">
                         <button
                             onClick={showPrevPhoto}
-                            onMouseEnter={(e) => gsap.to(e.currentTarget, { x: -15, opacity: 1, duration: 0.4, ease: "power3.out" })}
-                            onMouseLeave={(e) => gsap.to(e.currentTarget, { x: 0, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
-                            className="text-[11px] md:text-[12px] font-bold tracking-[0.2em] uppercase text-[#111] opacity-40 outline-none border-none bg-transparent cursor-pointer py-4"
+                            onMouseEnter={(e) => gsap.to(e.currentTarget.firstChild, { x: -15, opacity: 1, duration: 0.4, ease: "power3.out" })}
+                            onMouseLeave={(e) => gsap.to(e.currentTarget.firstChild, { x: 0, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
+                            className="outline-none border-none bg-transparent cursor-pointer p-[30px] md:p-[50px]"
                         >
-                            Left
+                            <span className="block text-[11px] md:text-[12px] font-bold tracking-[0.2em] uppercase text-[#111] opacity-40">Left</span>
                         </button>
 
                         <button
                             onClick={closeLightbox}
-                            onMouseEnter={(e) => gsap.to(e.currentTarget, { rotate: 90, scale: 1.2, opacity: 1, duration: 0.5, ease: "back.out(1.5)" })}
-                            onMouseLeave={(e) => gsap.to(e.currentTarget, { rotate: 0, scale: 1, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
-                            className="text-[28px] md:text-[32px] font-light text-[#111] opacity-40 outline-none border-none bg-transparent flex items-center justify-center cursor-pointer p-2"
+                            onMouseEnter={(e) => gsap.to(e.currentTarget.firstChild, { rotate: 90, scale: 1.2, opacity: 1, duration: 0.5, ease: "back.out(1.5)" })}
+                            onMouseLeave={(e) => gsap.to(e.currentTarget.firstChild, { rotate: 0, scale: 1, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
+                            className="outline-none border-none bg-transparent flex items-center justify-center cursor-pointer p-[30px] md:p-[50px]"
                         >
-                            ✕
+                            <span className="block text-[28px] md:text-[32px] font-light text-[#111] opacity-40">✕</span>
                         </button>
 
                         <button
                             onClick={showNextPhoto}
-                            onMouseEnter={(e) => gsap.to(e.currentTarget, { x: 15, opacity: 1, duration: 0.4, ease: "power3.out" })}
-                            onMouseLeave={(e) => gsap.to(e.currentTarget, { x: 0, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
-                            className="text-[11px] md:text-[12px] font-bold tracking-[0.2em] uppercase text-[#111] opacity-40 outline-none border-none bg-transparent cursor-pointer py-4"
+                            onMouseEnter={(e) => gsap.to(e.currentTarget.firstChild, { x: 15, opacity: 1, duration: 0.4, ease: "power3.out" })}
+                            onMouseLeave={(e) => gsap.to(e.currentTarget.firstChild, { x: 0, opacity: 0.4, duration: 0.4, ease: "power3.out" })}
+                            className="outline-none border-none bg-transparent cursor-pointer p-[30px] md:p-[50px]"
                         >
-                            Right
+                            <span className="block text-[11px] md:text-[12px] font-bold tracking-[0.2em] uppercase text-[#111] opacity-40">Right</span>
                         </button>
                     </div>
                 </>
