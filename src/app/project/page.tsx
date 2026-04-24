@@ -14,8 +14,8 @@ export default function ProjectPage() {
 
     const scrollState = useRef({ target: 0, current: 0 });
     const [contentHeight, setContentHeight] = useState(2000);
-    const isDesktopRef = useRef(true);
-    const [isDesktop, setIsDesktop] = useState(true);
+    const isDesktopRef = useRef(false);
+    const [isDesktop, setIsDesktop] = useState(false);
 
     // Состояние для активного фильтра (хэштега)
     const [activeFilter, setActiveFilter] = useState<string | null>(null);

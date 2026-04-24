@@ -33,8 +33,8 @@ export default function ProductPage() {
 
     const scrollState = useRef({ target: 0, current: 0 });
     const cursorPos = useRef({ x: 0, y: 0 });
-    const isDesktopRef = useRef(true);
-    const [isDesktop, setIsDesktop] = useState(true);
+    const isDesktopRef = useRef(false);
+    const [isDesktop, setIsDesktop] = useState(false);
 
     // Порог для кастомного скролла (>1440px)
     useEffect(() => {
