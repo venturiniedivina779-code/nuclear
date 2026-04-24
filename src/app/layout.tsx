@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Header } from '../components/Header';
 import CustomCursor from '../components/CustomCursor';
+import { GlobalScrollToTop } from '../components/GlobalScrollToTop';
 
 // Настройка шрифта
 const inter = Inter({
@@ -34,6 +35,9 @@ export default function RootLayout({
 
         {/* Шапка теперь зафиксирована на уровне всего приложения */}
         <Header />
+
+        {/* Глобальная кнопка "Вверх" */}
+        <GlobalScrollToTop />
 
         {children}
       </body>

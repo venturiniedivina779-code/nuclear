@@ -9,7 +9,7 @@ import lottie from 'lottie-web';
 // ==========================================================
 // 1. КОМПОНЕНТ ПУНКТА МЕНЮ
 // ==========================================================
-const NavItem = ({ href, text, isActive }: { href: string; text: string; isActive?: boolean }) => {
+const NavItem = ({ href, text, isActive, color }: { href: string; text: string; isActive?: boolean; color: string }) => {
     const star1Ref = useRef<HTMLSpanElement>(null);
     const star2Ref = useRef<HTMLSpanElement>(null);
 
@@ -36,12 +36,11 @@ const NavItem = ({ href, text, isActive }: { href: string; text: string; isActiv
             <div className="py-[10px] px-[2vw] lg:py-[20px] lg:px-[15px]">
                 <div className="overflow-hidden relative h-[20px] block flex-shrink-0">
                     <div className="transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-1/2 flex flex-col">
-                        {/* Состояние 1: Всегда #ebebeb с blend-exclusion */}
-                        <span className="text-[16px] lg:text-sm font-bold tracking-widest flex items-center whitespace-nowrap h-[20px] text-[#ebebeb]">
+                        <span className="text-[16px] lg:text-sm font-bold tracking-widest flex items-center whitespace-nowrap h-[20px]" style={{ color }}>
                             {text} <span ref={star1Ref} className="inline-flex items-center justify-center overflow-hidden" style={{ width: 0, opacity: 0 }}>✹</span>
                         </span>
-                        {/* Состояние 2 (Hover): Всегда #ebebeb */}
-                        <span className="text-[16px] lg:text-sm font-bold tracking-widest flex items-center whitespace-nowrap h-[20px] text-[#ebebeb]">
+                        {/* Состояние 2 (Hover): Используем тот же цвет */}
+                        <span className="text-[16px] lg:text-sm font-bold tracking-widest flex items-center whitespace-nowrap h-[20px]" style={{ color }}>
                             {text} <span ref={star2Ref} className="inline-flex items-center justify-center overflow-hidden" style={{ width: 0, opacity: 0 }}>✹</span>
                         </span>
                     </div>
@@ -58,6 +57,10 @@ export const Header = () => {
     const pathname = usePathname();
     const isProjectActive = pathname === '/project' || pathname.startsWith('/product/');
     const isHomePage = pathname === '/';
+    
+    // Определяем, нужно ли использовать темный цвет (для страниц продуктов и списка проектов)
+    const isDarkTheme = isProjectActive;
+    const themeColor = isDarkTheme ? '#1a1a1a' : '#ebebeb';
 
     const bigStarRef = useRef<HTMLSpanElement>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -136,9 +139,9 @@ export const Header = () => {
                 </div>
             </div>
 
-            {/* 2. СЛОЙ ХЕДЕРА С НАЛОЖЕНИЕМ */}
-            {/* ВАЖНО: класс blend-exclusion висит на корневом элементе, чтобы пробить z-index */}
-            <header className="fixed top-0 left-0 w-full h-[100px] z-[100] pointer-events-none blend-exclusion">
+            {/* 2. СЛОЙ ХЕДЕРА */}
+            {/* На страницах продуктов убираем blend-exclusion, как просил пользователь */}
+            <header className={`fixed top-0 left-0 w-full h-[100px] z-[100] pointer-events-none ${isDarkTheme ? '' : 'blend-exclusion'}`}>
 
                 {/* --- БУРГЕР (Только мобилка) --- */}
                 {/* Класс наложения убран отсюда, так как он теперь на родительском header */}
@@ -150,7 +153,11 @@ export const Header = () => {
                 >
                     <div
                         ref={lottieContainerRef}
-                        className="absolute w-[120px] h-[120px] scale-[1.3] flex items-center justify-center pointer-events-none text-[#ebebeb] [&_path]:!fill-[#ebebeb] [&_path]:!stroke-[#ebebeb]"
+                        className="header-lottie-icon absolute w-[120px] h-[120px] scale-[1.3] flex items-center justify-center pointer-events-none [&_path]:!fill-[var(--lottie-color)] [&_path]:!stroke-[var(--lottie-color)]"
+                        style={{ 
+                            color: themeColor,
+                            '--lottie-color': themeColor 
+                        } as React.CSSProperties}
                     />
                 </button>
 
@@ -165,9 +172,10 @@ export const Header = () => {
                         `}>
                             <TransitionLink href="/">
                                 <div
-                                    className="bg-[#ebebeb] [-webkit-mask-position:right_center] lg:[-webkit-mask-position:left_center] [mask-position:right_center] lg:[mask-position:left_center]"
+                                    className="[-webkit-mask-position:right_center] lg:[-webkit-mask-position:left_center] [mask-position:right_center] lg:[mask-position:left_center]"
                                     style={{
                                         width: '130px', height: '40px',
+                                        backgroundColor: themeColor,
                                         WebkitMaskImage: 'url(/logo_right.svg)', WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat',
                                         maskImage: 'url(/logo_right.svg)', maskSize: 'contain', maskRepeat: 'no-repeat',
                                     }}
@@ -181,13 +189,13 @@ export const Header = () => {
                         <nav className={`lg:hidden flex flex-row items-center transition-all ease-[cubic-bezier(0.76,0,0.24,1)] absolute right-[26vw] origin-right z-[10]
                             ${isMenuOpen ? 'duration-500 opacity-100 translate-x-0 pointer-events-auto' : 'duration-200 opacity-0 translate-x-8 pointer-events-none'}
                         `}>
-                            <NavItem href="/project" text="Project" isActive={isProjectActive} />
-                            <NavItem href="/contact" text="Contact" isActive={pathname === '/contact'} />
+                            <NavItem href="/project" text="Project" isActive={isProjectActive} color={themeColor} />
+                            <NavItem href="/contact" text="Contact" isActive={pathname === '/contact'} color={themeColor} />
                         </nav>
 
                         <nav className="hidden lg:flex flex-row items-center z-[10] gap-1 pointer-events-auto">
-                            <NavItem href="/project" text="Project" isActive={isProjectActive} />
-                            <NavItem href="/contact" text="Contact" isActive={pathname === '/contact'} />
+                            <NavItem href="/project" text="Project" isActive={isProjectActive} color={themeColor} />
+                            <NavItem href="/contact" text="Contact" isActive={pathname === '/contact'} color={themeColor} />
                         </nav>
                     </div>
                 </div>

@@ -165,7 +165,7 @@ export default function ProductPage() {
     if (!product) return null;
 
     return (
-        <div ref={containerRef} className={`fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] z-[60] ${isDesktop ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
+        <div id="product-main-container" ref={containerRef} className={`fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] z-[60] ${isDesktop ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
 
             {isDesktop && (
                 <div
@@ -287,7 +287,6 @@ export default function ProductPage() {
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
             />
-
         </div>
     );
 }

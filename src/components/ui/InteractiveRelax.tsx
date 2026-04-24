@@ -14,9 +14,8 @@ interface InteractiveRelaxProps {
 export default function InteractiveRelax({ dataGirl, dataCube, dataTriangle }: InteractiveRelaxProps) {
     const router = useRouter();
 
-    // "Пульты управления" для конкретных кадров анимации
+    // Реф нужен только для куба, чтобы перекинуть его на 24 кадр
     const cubeRef = useRef<LottieRefCurrentProps>(null);
-    const triangleRef = useRef<LottieRefCurrentProps>(null);
 
     const handleTriangleClick = () => {
         const wrapper = document.querySelector('.page-transition-wrapper');
@@ -30,7 +29,7 @@ export default function InteractiveRelax({ dataGirl, dataCube, dataTriangle }: I
     return (
         <div className="animate-stagger opacity-0 w-[250px] md:w-[350px] lg:w-[450px] xl:w-[4.5vw] mb-6 md:mb-10 xl:mb-6 translate-x-[-15px] origin-left scale-[1.4] lg:scale-[1.7] xl:scale-[1.6] relative">
 
-            {/* БЛОК С АНИМАЦИЯМИ (Отключаем события мыши, чтобы они не перекрывали хитбоксы) */}
+            {/* БЛОК С АНИМАЦИЯМИ */}
             <div className="relative w-full h-full pointer-events-none">
                 {/* 1. ФОН: ДЕВОЧКА */}
                 <div className="relative z-0 w-full h-full">
@@ -39,35 +38,43 @@ export default function InteractiveRelax({ dataGirl, dataCube, dataTriangle }: I
 
                 {/* 2. КУБ (Левая картина) */}
                 <div className="absolute top-[12px] left-[-15px] w-full h-full z-10">
-                    <Lottie lottieRef={cubeRef} animationData={dataCube} autoplay={false} loop={false} />
+                    <Lottie
+                        lottieRef={cubeRef}
+                        animationData={dataCube}
+                        autoplay={false}
+                        loop={true}
+                        // Безопасный запуск с 24 кадра после полной загрузки компонента
+                        onDOMLoaded={() => {
+                            cubeRef.current?.goToAndPlay(24, true);
+                        }}
+                    />
                 </div>
 
                 {/* 3. ТРЕУГОЛЬНИК (Правая картина) */}
                 <div className="absolute top-[7px] left-0 w-full h-full z-20">
-                    <Lottie lottieRef={triangleRef} animationData={dataTriangle} autoplay={false} loop={false} />
+                    {/* Крутится бесконечно с первого кадра */}
+                    <Lottie animationData={dataTriangle} autoplay={true} loop={true} />
                 </div>
             </div>
 
             {/* ======================================================== */}
-            {/* НЕВИДИМЫЕ ХИТБОКСЫ                                       */}
+            {/* ЧИСТЫЕ И ПРОЗРАЧНЫЕ ХИТБОКСЫ                             */}
             {/* ======================================================== */}
 
-            {/* Зона для Куба (Левая картина) */}
+            {/* Зона для Куба (Левая картина) - пустышка, просто чтобы закрыть от случайных кликов */}
             <div
-                className="absolute z-30 rounded-sm"
+                className="absolute z-30 rounded-sm pointer-events-auto"
                 style={{
                     width: '6%',
                     height: '6%',
                     top: '28%',
                     left: '6%'
                 }}
-                onMouseEnter={() => cubeRef.current?.playSegments([8, 32], true)}
-                onMouseLeave={() => cubeRef.current?.playSegments([46, 68], true)}
             />
 
-            {/* Зона для Треугольника (Правая картина) */}
+            {/* Зона для Треугольника (Правая картина) - клик и смена курсора */}
             <div
-                className="absolute z-30 rounded-sm"
+                className="absolute z-30 rounded-sm pointer-events-auto"
                 data-cursor="pointer"
                 style={{
                     width: '22%',
@@ -75,9 +82,7 @@ export default function InteractiveRelax({ dataGirl, dataCube, dataTriangle }: I
                     top: '22%',
                     left: '22%'
                 }}
-                onMouseEnter={() => triangleRef.current?.playSegments([8, 32], true)}
-                onMouseLeave={() => triangleRef.current?.playSegments([46, 68], true)}
-                onClick={handleTriangleClick}
+                onClick={(e) => { e.stopPropagation(); handleTriangleClick(); }}
             />
         </div>
     );
