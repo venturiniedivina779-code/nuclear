@@ -12,12 +12,12 @@ export const GlobalScrollToTop = () => {
 
     useEffect(() => {
         const handleScroll = (e: Event) => {
-            const target = e.target as HTMLElement;
+            const target = e.target;
             
             // Игнорируем мелкие элементы, ищем только те, что могут быть основными контейнерами
             // Обычно это либо document, либо дивы с overflow
             let scrollTop = 0;
-            if (target === document || (target as any) === window) {
+            if (target === document || target === window) {
                 scrollTop = window.scrollY || document.documentElement.scrollTop;
                 activeContainerRef.current = document.documentElement;
             } else if (target instanceof HTMLElement) {
