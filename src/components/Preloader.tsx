@@ -31,6 +31,16 @@ export const Preloader = ({ variant, isLoading, onComplete }: PreloaderProps) =>
         return () => clearTimeout(timer);
     }, [variant, isLoading, onComplete]);
 
+    // Защитный таймер для Home, чтобы сайт не вис вечно
+    useEffect(() => {
+        if (variant !== 'home' || !isLoading) return;
+        const backupTimer = setTimeout(() => {
+            console.log("Прелоадер закрыт по страховке");
+            onComplete();
+        }, 5000); // Через 5 секунд сайт откроется в любом случае
+        return () => clearTimeout(backupTimer);
+    }, [variant, isLoading, onComplete]);
+
     // Если не загрузка ИЛИ компонент еще не вмонтирован - ничего не рендерим
     if (!isLoading || !mounted) return null;
 
