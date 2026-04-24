@@ -182,13 +182,11 @@ export const Header = () => {
                             ${isMenuOpen ? 'duration-500 opacity-100 translate-x-0 pointer-events-auto' : 'duration-200 opacity-0 translate-x-8 pointer-events-none'}
                         `}>
                             <NavItem href="/project" text="Project" isActive={isProjectActive} />
-                            <NavItem href="/space" text="Space" isActive={pathname === '/space'} />
                             <NavItem href="/contact" text="Contact" isActive={pathname === '/contact'} />
                         </nav>
 
                         <nav className="hidden lg:flex flex-row items-center z-[10] gap-1 pointer-events-auto">
                             <NavItem href="/project" text="Project" isActive={isProjectActive} />
-                            <NavItem href="/space" text="Space" isActive={pathname === '/space'} />
                             <NavItem href="/contact" text="Contact" isActive={pathname === '/contact'} />
                         </nav>
                     </div>

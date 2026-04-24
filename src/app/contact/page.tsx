@@ -1,18 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
-import Lottie from 'lottie-react';
+// ВАЖНО: Проверь, что путь к компоненту совпадает с тем, куда ты его сохранил
+import InteractiveRelax from '@/components/ui/InteractiveRelax';
 
-// --- КОМПОНЕНТ "МАГНИТНЫЕ" СОЦСЕТИ ---
+// --- КОМПОНЕНТ "МАГНИТНЫЕ" СОЦСЕТИ (Без изменений) ---
 const MagneticSocials = () => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
     const items = [
         { id: 1, name: 'Instagram', url: 'https://www.instagram.com/gardennuclear/', icon: '/icons/instagram.svg', iconColor: '/icons/instagram_color.svg' },
         { id: 2, name: 'Telegram', url: 'https://t.me', icon: '/icons/telegram.svg', iconColor: '/icons/telegram_color.svg' },
-        { id: 3, name: 'YouTube', url: 'https://youtube.com', icon: '/icons/youtube.svg', iconColor: '/icons/youtube_color.svg' },
-        { id: 4, name: 'Behance', url: 'https://behance.net', icon: '/icons/behance.svg', iconColor: '/icons/behance.svg' }
     ];
 
     return (
@@ -56,23 +56,30 @@ const MagneticSocials = () => {
 
 export default function ContactPage() {
     const [loading, setLoading] = useState(true);
-    const [relaxAnimData, setRelaxAnimData] = useState<any>(null);
+    // Стейт для хранения всех трех анимаций
+    const [animations, setAnimations] = useState<{ girl: any, cube: any, triangle: any } | null>(null);
     const loadTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const router = useRouter();
 
-    // 1. ЕДИНЫЙ ЦИКЛ ЗАГРУЗКИ
+    // 1. ЕДИНЫЙ ЦИКЛ ЗАГРУЗКИ (Сразу 3 файла)
     useEffect(() => {
         gsap.set([".animate-stagger"], { opacity: 0, y: 20 });
 
-        fetch('/relax.json')
-            .then(response => response.json())
-            .then(data => {
-                setRelaxAnimData(data);
+        // Убедись, что файлы в папке public называются именно так и имеют формат .json
+        Promise.all([
+            fetch('/relax_girl.json').then(res => res.json()),
+            fetch('/relax_cube.json').then(res => res.json()),
+            fetch('/relax_triangle.json').then(res => res.json())
+        ])
+            .then(([girlData, cubeData, triangleData]) => {
+                setAnimations({ girl: girlData, cube: cubeData, triangle: triangleData });
+
                 loadTimerRef.current = setTimeout(() => {
                     setLoading(false);
                 }, 100);
             })
             .catch(error => {
-                console.error('Ошибка загрузки relax.json:', error);
+                console.error('Ошибка загрузки анимаций:', error);
                 setLoading(false);
             });
 
@@ -84,9 +91,8 @@ export default function ContactPage() {
 
     // 2. ЕДИНАЯ АНИМАЦИЯ ПОЯВЛЕНИЯ
     useEffect(() => {
-        if (!loading && relaxAnimData) {
+        if (!loading && animations) {
             let ctx = gsap.context(() => {
-                // ИСПРАВЛЕНО: Убрали селекторы хедера, оставили только контент страницы
                 gsap.fromTo(".animate-stagger",
                     { y: 20, opacity: 0 },
                     {
@@ -101,7 +107,7 @@ export default function ContactPage() {
             });
             return () => ctx.revert();
         }
-    }, [loading, relaxAnimData]);
+    }, [loading, animations]);
 
     return (
         <main className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
@@ -109,14 +115,17 @@ export default function ContactPage() {
                 <div className="pointer-events-auto w-full h-full xl:w-[45%] flex flex-col px-[6vw] xl:pl-[4vw] xl:pr-0 pt-[16vh] md:pt-[20vh] xl:pt-[28vh] box-border">
                     <div className="w-full">
 
-                        {relaxAnimData && (
-                            <div className="animate-stagger opacity-0 w-[250px] md:w-[350px] lg:w-[450px] xl:w-[4.5vw] mb-6 md:mb-10 xl:mb-6 translate-x-[-15px] origin-left scale-[1.4] lg:scale-[1.7] xl:scale-[1.6]">
-                                <Lottie animationData={relaxAnimData} loop={true} />
-                            </div>
+                        {/* НАША НОВАЯ МНОГОСЛОЙНАЯ АНИМАЦИЯ */}
+                        {animations && (
+                            <InteractiveRelax
+                                dataGirl={animations.girl}
+                                dataCube={animations.cube}
+                                dataTriangle={animations.triangle}
+                            />
                         )}
 
                         <p className="animate-stagger opacity-0 text-[20px] md:text-[24px] lg:text-[28px] xl:text-[1.2vw] font-medium leading-[1.6] text-[#111] opacity-90 mb-12 md:mb-16 xl:mb-12 max-w-[500px] lg:max-w-[750px] xl:max-w-[500px]">
-                            I am always open to discuss your project, improve your online presence or help with your UX/UI design challenges.
+                            Мы любим создавать вещи на стыке разных форматов — от цифровых 3D-инсталляций до лимитированных дропов из серебра и арт-игрушек. Если у вас есть идея для совместного проекта или смелой коллаборации, пишите нам в Telegram. Всегда рады новым лицам!
                         </p>
 
                         <div className="flex flex-col gap-1 mb-8 lg:mb-12 xl:mb-8">

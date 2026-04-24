@@ -51,6 +51,8 @@ body {
   }
 }
 
+/* Easter Egg: управляется из JS — здесь ничего не нужно */
+
 /* Фикс моргания GSAP */
 .animate-up {
   opacity: 0;
