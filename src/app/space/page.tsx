@@ -5,11 +5,28 @@ import gsap from 'gsap';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Preloader } from '@/components/Preloader';
 
+// Массив со всеми твоими видео
+const bgVideos = [
+    '/videos/video1.mp4',
+    '/videos/video2.mp4',
+    '/videos/video3.mp4',
+    '/videos/video4.mp4',
+    '/videos/video5.mp4',
+];
+
 export default function SpacePage() {
     const [loading, setLoading] = useState(true);
     const [volume, setVolume] = useState(0);
+    const [videoSrc, setVideoSrc] = useState(''); // Стейт для текущего видео
+
     const lastVolumeRef = useRef(0.5);
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    // Устанавливаем рандомное видео при монтировании компонента
+    useEffect(() => {
+        const randomVideo = bgVideos[Math.floor(Math.random() * bgVideos.length)];
+        setVideoSrc(randomVideo);
+    }, []);
 
     // Мгновенно прячем элементы при входе на страницу
     useEffect(() => {
@@ -22,7 +39,8 @@ export default function SpacePage() {
     // GSAP: Плавное появление после загрузки
     useEffect(() => {
         if (!loading) {
-            const selectors = [".custom-home-btn", ".custom-nav", ".space-fade", ".animate-up"];
+            // УБРАЛИ .space-fade отсюда
+            const selectors = [".custom-home-btn", ".custom-nav", ".animate-up"];
             gsap.fromTo(selectors,
                 { y: 30, opacity: 0 },
                 {
@@ -69,7 +87,7 @@ export default function SpacePage() {
     return (
         <main className="fixed inset-0 w-full h-[100dvh] bg-[#111] text-[#ebebeb] overflow-hidden z-[60]">
 
-            {/* ====== ЭКРАН ЗАГРУЗКИ (Вызов компонента) ====== */}
+            {/* ====== ЭКРАН ЗАГРУЗКИ ====== */}
             <Preloader
                 variant="space"
                 isLoading={loading}
@@ -77,15 +95,18 @@ export default function SpacePage() {
             />
 
             {/* ВИДЕО БЭКГРАУНД */}
-            <video
-                ref={videoRef}
-                src="/videos/video4.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute top-0 left-0 w-full h-full object-cover z-0 opacity-0 space-fade"
-            />
+            {/* Убрали opacity-0 и space-fade из классов */}
+            {videoSrc && (
+                <video
+                    ref={videoRef}
+                    src={videoSrc}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute top-0 left-0 w-full h-full object-cover z-0"
+                />
+            )}
 
             {/* ИНТЕРФЕЙС ПОВЕРХ ВИДЕО */}
             <div className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none blend-exclusion">

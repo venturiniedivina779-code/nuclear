@@ -14,6 +14,8 @@ export default function ProjectPage() {
 
     const scrollState = useRef({ target: 0, current: 0 });
     const [contentHeight, setContentHeight] = useState(2000);
+    const isDesktopRef = useRef(true);
+    const [isDesktop, setIsDesktop] = useState(true);
 
     // Состояние для активного фильтра (хэштега)
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -32,6 +34,57 @@ export default function ProjectPage() {
     const filteredProducts = activeFilter
         ? products.filter(p => p.tags && p.tags.includes(activeFilter))
         : products;
+
+    // Порог для кастомного скролла (>1440px)
+    useEffect(() => {
+        const check = () => {
+            const d = window.innerWidth > 1440;
+            setIsDesktop(d);
+            isDesktopRef.current = d;
+        };
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
+    // На <=1440px: сбрасываем GSAP-трансформы, показываем карточки, убираем lg-позиционирование
+    useEffect(() => {
+        if (!isDesktop) {
+            if (leftPanelRef.current) {
+                gsap.set(leftPanelRef.current, { clearProps: 'transform' });
+                leftPanelRef.current.style.setProperty('position', 'relative', 'important');
+                leftPanelRef.current.style.setProperty('width', '100%', 'important');
+                leftPanelRef.current.style.setProperty('height', 'auto', 'important');
+            }
+            if (rightContentRef.current) {
+                gsap.set(rightContentRef.current, { clearProps: 'transform' });
+                rightContentRef.current.style.setProperty('position', 'relative', 'important');
+                rightContentRef.current.style.setProperty('top', 'auto', 'important');
+                rightContentRef.current.style.setProperty('left', 'auto', 'important');
+                rightContentRef.current.style.setProperty('width', '100%', 'important');
+            }
+            requestAnimationFrame(() => {
+                if (rightContentRef.current) {
+                    const cards = rightContentRef.current.querySelectorAll('.product-card');
+                    cards.forEach((card) => {
+                        gsap.set(card as HTMLElement, { opacity: 1, y: 0, scale: 1 });
+                    });
+                }
+            });
+        } else {
+            if (leftPanelRef.current) {
+                leftPanelRef.current.style.removeProperty('position');
+                leftPanelRef.current.style.removeProperty('width');
+                leftPanelRef.current.style.removeProperty('height');
+            }
+            if (rightContentRef.current) {
+                rightContentRef.current.style.removeProperty('position');
+                rightContentRef.current.style.removeProperty('top');
+                rightContentRef.current.style.removeProperty('left');
+                rightContentRef.current.style.removeProperty('width');
+            }
+        }
+    }, [isDesktop, activeFilter]);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -61,6 +114,9 @@ export default function ProjectPage() {
                     quickX(cursorPos.current.x);
                     quickY(cursorPos.current.y);
                 }
+
+                // На <=1440px — пропускаем кастомный скролл
+                if (!isDesktopRef.current) return;
 
                 scrollState.current.current += (scrollState.current.target - scrollState.current.current) * 0.08;
                 const currentScrollRaw = scrollState.current.current;
@@ -143,22 +199,24 @@ export default function ProjectPage() {
     }, []);
 
     return (
-        <div className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
+        <div className={`fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] z-[60] ${isDesktop ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
+
+            {isDesktop && (
+                <div
+                    id="project-scroll-track"
+                    className="absolute top-0 h-full overflow-y-auto overflow-x-hidden custom-scrollbar z-20 pointer-events-auto w-full lg:left-[35%] lg:w-[65%]"
+                    onScroll={(e) => { scrollState.current.target = e.currentTarget.scrollTop; }}
+                >
+                    <div style={{ height: contentHeight }} className="w-[1px] pointer-events-none opacity-0" />
+                </div>
+            )}
 
             <div
-                id="project-scroll-track"
-                className="absolute top-0 h-full overflow-y-auto overflow-x-hidden custom-scrollbar z-20 pointer-events-auto w-full lg:left-[35%] lg:w-[65%]"
-                onScroll={(e) => { scrollState.current.target = e.currentTarget.scrollTop; }}
-            >
-                <div style={{ height: contentHeight }} className="w-[1px] pointer-events-none opacity-0" />
-            </div>
-
-            <div
-                className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-visible z-30 flex flex-col lg:block"
-                onWheel={(e) => {
+                className={`${isDesktop ? 'absolute h-full' : 'relative h-auto'} top-0 left-0 w-full pointer-events-none overflow-visible z-30 flex flex-col lg:block`}
+                onWheel={isDesktop ? (e) => {
                     const scrollDiv = document.getElementById('project-scroll-track');
                     if (scrollDiv) scrollDiv.scrollTop += e.deltaY;
-                }}
+                } : undefined}
             >
                 <div
                     ref={leftPanelRef}

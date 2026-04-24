@@ -33,6 +33,51 @@ export default function ProductPage() {
 
     const scrollState = useRef({ target: 0, current: 0 });
     const cursorPos = useRef({ x: 0, y: 0 });
+    const isDesktopRef = useRef(true);
+    const [isDesktop, setIsDesktop] = useState(true);
+
+    // Порог для кастомного скролла (>1440px)
+    useEffect(() => {
+        const check = () => {
+            const d = window.innerWidth > 1440;
+            setIsDesktop(d);
+            isDesktopRef.current = d;
+        };
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
+    // На <=1440px: сбрасываем GSAP-трансформы и убираем lg-позиционирование
+    useEffect(() => {
+        if (!isDesktop) {
+            if (leftPanelRef.current) {
+                gsap.set(leftPanelRef.current, { clearProps: 'transform' });
+                leftPanelRef.current.style.setProperty('position', 'relative', 'important');
+                leftPanelRef.current.style.setProperty('width', '100%', 'important');
+                leftPanelRef.current.style.setProperty('height', 'auto', 'important');
+            }
+            if (rightContentRef.current) {
+                gsap.set(rightContentRef.current, { clearProps: 'transform' });
+                rightContentRef.current.style.setProperty('position', 'relative', 'important');
+                rightContentRef.current.style.setProperty('top', 'auto', 'important');
+                rightContentRef.current.style.setProperty('left', 'auto', 'important');
+                rightContentRef.current.style.setProperty('width', '100%', 'important');
+            }
+        } else {
+            if (leftPanelRef.current) {
+                leftPanelRef.current.style.removeProperty('position');
+                leftPanelRef.current.style.removeProperty('width');
+                leftPanelRef.current.style.removeProperty('height');
+            }
+            if (rightContentRef.current) {
+                rightContentRef.current.style.removeProperty('position');
+                rightContentRef.current.style.removeProperty('top');
+                rightContentRef.current.style.removeProperty('left');
+                rightContentRef.current.style.removeProperty('width');
+            }
+        }
+    }, [isDesktop]);
 
     useEffect(() => {
         let renderTick: () => void;
@@ -59,6 +104,9 @@ export default function ProductPage() {
                     quickX(cursorPos.current.x);
                     quickY(cursorPos.current.y);
                 }
+
+                // На <=1440px — пропускаем кастомный скролл
+                if (!isDesktopRef.current) return;
 
                 scrollState.current.current += (scrollState.current.target - scrollState.current.current) * 0.08;
                 const currentScrollRaw = scrollState.current.current;
@@ -110,22 +158,24 @@ export default function ProductPage() {
     if (!product) return null;
 
     return (
-        <div ref={containerRef} className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
+        <div ref={containerRef} className={`fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] z-[60] ${isDesktop ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
+
+            {isDesktop && (
+                <div
+                    id="product-scroll-track"
+                    className="absolute top-0 left-0 w-full h-full overflow-y-auto custom-scrollbar z-20 pointer-events-auto"
+                    onScroll={(e) => { scrollState.current.target = e.currentTarget.scrollTop; }}
+                >
+                    <div ref={contentHeightRef} className="w-px pointer-events-none opacity-0" />
+                </div>
+            )}
 
             <div
-                id="product-scroll-track"
-                className="absolute top-0 left-0 w-full h-full overflow-y-auto custom-scrollbar z-20 pointer-events-auto"
-                onScroll={(e) => { scrollState.current.target = e.currentTarget.scrollTop; }}
-            >
-                <div ref={contentHeightRef} className="w-px pointer-events-none opacity-0" />
-            </div>
-
-            <div
-                className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-visible z-30 flex flex-col lg:block"
-                onWheel={(e) => {
+                className={`${isDesktop ? 'absolute h-full' : 'relative h-auto'} top-0 left-0 w-full pointer-events-none overflow-visible z-30 flex flex-col lg:block`}
+                onWheel={isDesktop ? (e) => {
                     const scrollDiv = document.getElementById('product-scroll-track');
                     if (scrollDiv) scrollDiv.scrollTop += e.deltaY;
-                }}
+                } : undefined}
             >
                 <div
                     ref={leftPanelRef}
