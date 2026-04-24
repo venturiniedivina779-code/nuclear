@@ -44,7 +44,14 @@ export default function ProjectPage() {
         };
         check();
         window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
+
+        // Отключаем бленд-мод на мобилках для этой страницы, чтобы не блокировать клики
+        document.documentElement.classList.add('disable-blend-on-mobile');
+
+        return () => {
+            window.removeEventListener('resize', check);
+            document.documentElement.classList.remove('disable-blend-on-mobile');
+        };
     }, []);
 
     // На <=1440px: сбрасываем GSAP-трансформы, показываем карточки, убираем lg-позиционирование

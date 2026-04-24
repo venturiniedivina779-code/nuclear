@@ -38,6 +38,12 @@ body {
   mix-blend-mode: exclusion;
 }
 
+@media (max-width: 1024px) {
+  .disable-blend-on-mobile .blend-exclusion {
+    mix-blend-mode: normal !important;
+  }
+}
+
 /* Скрываем кастомный курсор на мобильных/планшетах */
 @media (max-width: 1024px) {
   .custom-cursor {

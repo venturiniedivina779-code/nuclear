@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import gsap from 'gsap';
 
 interface ShareModalProps {
@@ -12,11 +13,13 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
     // 1. Ставим правильные русские слова
     const [copyText, setCopyText] = useState("Скопировать");
     const [currentUrl, setCurrentUrl] = useState("");
+    const [mounted, setMounted] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
     const copyTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Очистка таймера и GSAP-твинов при размонтировании
     useEffect(() => {
+        setMounted(true);
         return () => {
             if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
             if (modalRef.current) gsap.killTweensOf(modalRef.current);
@@ -62,9 +65,11 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
         }
     };
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <div
-            className={`fixed inset-0 w-full h-[100dvh] bg-black/40 z-[300] flex items-center justify-center backdrop-blur-[2px] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            className={`fixed inset-0 w-full h-[100dvh] bg-black/40 z-[999999] flex items-center justify-center backdrop-blur-[2px] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                 }`}
             onClick={handleClose}
         >
@@ -92,7 +97,6 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                 </div>
 
                 <div className="flex justify-start w-full">
-                    {/* 4. Вот твоя кнопка! Заменили w-[160px] на w-auto px-8 и обновили логику проверки на русское слово */}
                     <button
                         onClick={handleCopyLink}
                         className={`flex items-center justify-center gap-[10px] w-full h-[55px] rounded-[16px] text-[18px] font-medium transition-all duration-300 outline-none border-none cursor-pointer ${copyText === "Скопировать"
@@ -115,6 +119,7 @@ export const ShareModal = ({ isOpen, onClose }: ShareModalProps) => {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

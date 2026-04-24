@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import gsap from 'gsap';
 
@@ -12,10 +13,12 @@ interface LightboxProps {
 
 export const Lightbox = ({ photos, currentIndex, setCurrentIndex }: LightboxProps) => {
     const [isClosing, setIsClosing] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Очистка таймера при размонтировании
     useEffect(() => {
+        setMounted(true);
         return () => {
             if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
         };
@@ -66,9 +69,11 @@ export const Lightbox = ({ photos, currentIndex, setCurrentIndex }: LightboxProp
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [currentIndex, isClosing, closeLightbox, showNextPhoto, showPrevPhoto]);
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <div
-            className={`fixed inset-0 w-full h-[100dvh] bg-[#ebebeb] flex flex-col items-center z-[99999] transition-opacity duration-300 ease-out ${currentIndex !== null && !isClosing ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            className={`fixed inset-0 w-full h-[100dvh] bg-[#ebebeb] flex flex-col items-center z-[999999] transition-opacity duration-300 ease-out ${currentIndex !== null && !isClosing ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                 }`}
             onClick={closeLightbox}
         >
@@ -113,6 +118,7 @@ export const Lightbox = ({ photos, currentIndex, setCurrentIndex }: LightboxProp
                     </div>
                 </>
             )}
-        </div>
+        </div>,
+        document.body
     );
 };
