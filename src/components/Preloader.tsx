@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Lottie from 'lottie-react';
-import homeAnimationData from '@/data/SampleAnimation01.json';
+import homeAnimationData from '@/data/sample_animation_01.json';
 import spaceAnimationData from '@/data/loading_bar.json';
 
 interface PreloaderProps {
