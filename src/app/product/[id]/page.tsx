@@ -171,7 +171,7 @@ export default function ProductPage() {
             )}
 
             <div
-                className={`${isDesktop ? 'absolute h-full' : 'relative h-auto'} top-0 left-0 w-full pointer-events-none overflow-visible z-30 flex flex-col lg:block`}
+                className={`${isDesktop ? 'absolute h-full pointer-events-none' : 'relative h-auto pointer-events-auto'} top-0 left-0 w-full overflow-visible z-30 flex flex-col lg:block`}
                 onWheel={isDesktop ? (e) => {
                     const scrollDiv = document.getElementById('product-scroll-track');
                     if (scrollDiv) scrollDiv.scrollTop += e.deltaY;
