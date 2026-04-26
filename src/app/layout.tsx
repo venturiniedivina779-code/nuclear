@@ -11,9 +11,16 @@ const inter = Inter({
   weight: ['400', '500', '700']
 });
 
+export const viewport = {
+  themeColor: '#ebebeb',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
-  title: 'Kesa Today',
-  description: 'Portfolio of Kesa',
+  title: 'Nuclear Garden',
+  description: 'Welcome to my Nuclear Garden',
   icons: {
     icon: '/fav3.ico', // путь от папки public или app
     // Если есть разные форматы:

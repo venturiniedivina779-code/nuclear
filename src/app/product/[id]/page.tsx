@@ -28,7 +28,6 @@ export default function ProductPage() {
 
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightContentRef = useRef<HTMLDivElement>(null);
-    const customCursorRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const scrollState = useRef({ target: 0, current: 0 });
@@ -99,19 +98,7 @@ export default function ProductPage() {
                 );
             }
 
-            const quickX = customCursorRef.current
-                ? gsap.quickTo(customCursorRef.current, "x", { duration: 0.5, ease: 'power3.out' })
-                : null;
-            const quickY = customCursorRef.current
-                ? gsap.quickTo(customCursorRef.current, "y", { duration: 0.5, ease: 'power3.out' })
-                : null;
-
             renderTick = () => {
-                if (quickX && quickY) {
-                    quickX(cursorPos.current.x);
-                    quickY(cursorPos.current.y);
-                }
-
                 // На <=1440px — пропускаем кастомный скролл
                 if (!isDesktopRef.current) return;
 

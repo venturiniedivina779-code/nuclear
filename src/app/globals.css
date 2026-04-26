@@ -7,6 +7,10 @@
   --foreground: #ebebeb;
   --title-size: 60px;
   --desc-size: 16px;
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
 }
 
 @media (min-width: 768px) {
@@ -31,6 +35,8 @@ body {
   background-color: #ebebeb;
   /* Или #ebebeb, если хочешь светлую подложку */
   color: #ebebeb;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
 }
 
 /* Exclusion blend mode for content layers */
@@ -223,7 +229,7 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .lg\:top-\[50vh\] {
-    top: 50vh !important;
+    top: 44.4vh !important;
   }
 
   .lg\:top-\[40px\] {

@@ -9,7 +9,6 @@ import { products, getPreviewImagePath, getAllTags } from '../../data/products';
 export default function ProjectPage() {
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightContentRef = useRef<HTMLDivElement>(null);
-    const customCursorRef = useRef<HTMLDivElement>(null);
     const cursorPos = useRef({ x: 0, y: 0 });
 
     const scrollState = useRef({ target: 0, current: 0 });
@@ -109,19 +108,7 @@ export default function ProjectPage() {
                 { y: 0, opacity: 1, duration: 1.2, stagger: 0.1, ease: "power4.out" }
             );
 
-            const quickX = customCursorRef.current
-                ? gsap.quickTo(customCursorRef.current, "x", { duration: 0.5, ease: 'power3.out' })
-                : null;
-            const quickY = customCursorRef.current
-                ? gsap.quickTo(customCursorRef.current, "y", { duration: 0.5, ease: 'power3.out' })
-                : null;
-
             const renderTick = () => {
-                if (quickX && quickY) {
-                    quickX(cursorPos.current.x);
-                    quickY(cursorPos.current.y);
-                }
-
                 // На <=1440px — пропускаем кастомный скролл
                 if (!isDesktopRef.current) return;
 

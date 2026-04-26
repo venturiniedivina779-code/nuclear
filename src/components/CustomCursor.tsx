@@ -1,70 +1,94 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
 
 export default function CustomCursor() {
     const dotRef = useRef<HTMLDivElement>(null);
     const starRef = useRef<HTMLDivElement>(null);
-    const cursorPos = useRef({ x: -100, y: -100 });
+    const pathname = usePathname(); // Следим за сменой страницы
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        cursorPos.current = { x: e.clientX, y: e.clientY };
-
-        if (dotRef.current) {
-            gsap.set(dotRef.current, {
-                x: cursorPos.current.x + 5,
-                y: cursorPos.current.y + 12,
+    // Эффект для сброса состояния курсора при переходе на другую страницу
+    useEffect(() => {
+        if (dotRef.current && starRef.current) {
+            gsap.to(dotRef.current, {
+                backgroundImage: `url('/cursors/arrow.svg')`,
+                duration: 0.3,
+                ease: 'power2.out',
+                overwrite: 'auto'
+            });
+            gsap.to(starRef.current, { 
+                scale: 1, 
+                rotate: 0, 
+                duration: 0.3,
+                ease: 'power2.out',
+                overwrite: 'auto'
             });
         }
-    }, []);
+    }, [pathname]);
 
     useEffect(() => {
-        // 1. Сразу центрируем оба элемента средствами самого GSAP, чтобы не было глюков
-        if (dotRef.current) gsap.set(dotRef.current, { xPercent: -50, yPercent: -50 });
-        if (starRef.current) gsap.set(starRef.current, { xPercent: -50, yPercent: -50 });
+        if (!dotRef.current || !starRef.current) return;
 
-        // 2. Устанавливаем базовую картинку (убедись, что arrow.svg существует!)
-        if (dotRef.current) {
-            gsap.set(dotRef.current, {
-                backgroundImage: `url('/cursors/arrow.svg')`,
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-                width: 32,  // Вернули нормальные размеры для SVG
-                height: 32
+        const dot = dotRef.current;
+        const star = starRef.current;
+
+        // 1. Начальная настройка и принудительное включение GPU-ускорения
+        gsap.set([dot, star], { 
+            xPercent: -50, 
+            yPercent: -50,
+            force3D: true, 
+            x: -100,
+            y: -100
+        });
+
+        // Базовый вид точки
+        gsap.set(dot, {
+            backgroundImage: `url('/cursors/arrow.svg')`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            width: 32,
+            height: 32
+        });
+
+        // 2. Оптимизированные функции обновления для звезды
+        const xStar = gsap.quickTo(star, "x", { duration: 0.9, ease: "power3.out" });
+        const yStar = gsap.quickTo(star, "y", { duration: 0.9, ease: "power3.out" });
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const { clientX, clientY } = e;
+            
+            gsap.set(dot, {
+                x: clientX + 5,
+                y: clientY + 12
             });
-        }
-
-        window.addEventListener('mousemove', handleMouseMove);
-
-        const updateStar = () => {
-            if (starRef.current) {
-                gsap.to(starRef.current, {
-                    x: cursorPos.current.x + 45,
-                    y: cursorPos.current.y + 45,
-                    duration: 1.5,
-                    ease: 'power3.out',
-                });
-            }
+            
+            xStar(clientX + 45);
+            yStar(clientY + 45);
         };
-        gsap.ticker.add(updateStar);
 
         const handleMouseOver = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             const interactiveEl = target.closest('[data-cursor], a, button, .group, [role="button"]');
 
-            if (interactiveEl && dotRef.current) {
+            if (interactiveEl) {
                 const cursorType = interactiveEl.getAttribute('data-cursor') || 'pointer';
 
-                // Меняем SVG при наведении
-                gsap.to(dotRef.current, {
+                gsap.to(dot, {
                     backgroundImage: `url('/cursors/${cursorType}.svg')`,
                     duration: 0.2,
-                    ease: 'power2.out'
+                    ease: 'power2.out',
+                    overwrite: 'auto'
                 });
 
-                if (starRef.current) gsap.to(starRef.current, { scale: 2.5, rotate: 45, duration: 0.3 });
+                gsap.to(star, { 
+                    scale: 2.5, 
+                    rotate: 45, 
+                    duration: 0.3,
+                    overwrite: 'auto'
+                });
             }
         };
 
@@ -72,41 +96,48 @@ export default function CustomCursor() {
             const target = e.target as HTMLElement;
             const interactiveEl = target.closest('[data-cursor], a, button, .group, [role="button"]');
 
-            if (interactiveEl && dotRef.current) {
-                // Возвращаем обычную стрелку
-                gsap.to(dotRef.current, {
+            if (interactiveEl) {
+                gsap.to(dot, {
                     backgroundImage: `url('/cursors/arrow.svg')`,
                     duration: 0.2,
-                    ease: 'power2.out'
+                    ease: 'power2.out',
+                    overwrite: 'auto'
                 });
 
-                if (starRef.current) gsap.to(starRef.current, { scale: 1, rotate: 0, duration: 0.3 });
+                gsap.to(star, { 
+                    scale: 1, 
+                    rotate: 0, 
+                    duration: 0.3,
+                    overwrite: 'auto'
+                });
             }
         };
 
+        window.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseover', handleMouseOver);
         document.addEventListener('mouseout', handleMouseOut);
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
-            gsap.ticker.remove(updateStar);
             document.removeEventListener('mouseover', handleMouseOver);
             document.removeEventListener('mouseout', handleMouseOut);
         };
-    }, [handleMouseMove]);
+    }, []);
 
     return (
         <>
-            {/* Главный курсор (чистый, без красного цвета) */}
+            {/* Главный курсор */}
             <div
                 ref={dotRef}
-                className="fixed top-0 left-0 z-[10000] pointer-events-none hidden lg:block"
+                className="fixed top-0 left-0 z-[1000001] pointer-events-none hidden lg:block"
+                style={{ willChange: 'transform' }}
             />
 
-            {/* Звезда (убрали инлайн-стиль transform, его теперь делает GSAP) */}
+            {/* Звезда */}
             <div
                 ref={starRef}
-                className="fixed top-0 left-0 z-[9999] pointer-events-none hidden lg:block"
+                className="fixed top-0 left-0 z-[1000000] pointer-events-none hidden lg:block"
+                style={{ willChange: 'transform' }}
             >
                 <span style={{ fontSize: '58px', color: '#ff5f24ff', lineHeight: 1 }}>✹</span>
             </div>

@@ -67,7 +67,7 @@ export default function Home() {
           </div>
 
           {/* Заголовок (СДВИНУТ НИЖЕ НА МОБИЛКАХ: top-[14vh] -> top-[26vh]) */}
-          <div className="animate-up opacity-0 absolute w-[90vw] top-[14vh] left-[6vw] lg:w-[50vw] lg:top-[22vh] lg:left-[22.2vw]">
+          <div className="animate-up opacity-0 absolute w-[90vw] top-[14vh] left-[6vw] lg:w-[50vw] lg:top-[20vh] lg:left-[22.2vw]">
             <TextPressure
               text={"Nuclear\ngarden"}
               className="text-[length:var(--title-size)] leading-[0.95] lg:leading-[0.9] tracking-tighter text-[#ebebeb]"
@@ -79,7 +79,7 @@ export default function Home() {
             <p className="text-[length:var(--desc-size)] font-medium leading-[1.45] lg:leading-[1.4] text-[#ebebeb]">
               <Typewriter
                 text="В нашей мастерской рождаются самые разные форматы — от независимого самиздата до концептуального серебра. Мы ценим уникальность, поэтому каждый релиз выпускается строгим лимитом или вовсе в одном экземпляре. Загляните в меню проектов: там собраны наши актуальные коллекции, включая открытки, арт-игрушки, зины и серебряные предметы"
-                speed={50}
+                speed={25}
                 delay={3500}
               />
             </p>

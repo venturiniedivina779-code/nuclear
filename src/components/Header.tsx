@@ -57,7 +57,7 @@ export const Header = () => {
     const pathname = usePathname();
     const isProjectActive = pathname === '/project' || pathname.startsWith('/product/');
     const isHomePage = pathname === '/';
-    
+
     // Определяем, нужно ли использовать темный цвет (для страниц продуктов и списка проектов)
     const isDarkTheme = isProjectActive;
     const themeColor = isDarkTheme ? '#1a1a1a' : '#ebebeb';
@@ -122,9 +122,9 @@ export const Header = () => {
         <>
             {/* 1. СЛОЙ ДЛЯ ЗВЕЗДЫ (БЕЗ НАЛОЖЕНИЯ) */}
             <div className="fixed top-0 left-0 w-full h-[100px] z-[90] pointer-events-none">
-                <div className="absolute top-[4vh] right-[6vw] lg:top-[40px] lg:left-[40px] lg:right-auto flex items-center z-[50] pointer-events-none h-[44px]">
+                <div className="absolute top-[calc(-2vh+env(safe-area-inset-top))] right-[4vw] lg:top-[40px] lg:left-[40px] lg:right-auto flex items-center z-[50] pointer-events-none h-[44px]">
                     {/* Обёртка, которая отвечает только за позицию */}
-                    <div className="absolute top-[-120px] right-[-80px] md:right-[-160px] lg:right-auto lg:left-[120px] w-[280px] h-[280px] pointer-events-none flex items-center justify-center">
+                    <div className="absolute top-[calc(-55px+env(safe-area-inset-top))] right-[-80px] md:right-[-160px] lg:right-auto lg:left-[120px] w-[280px] h-[280px] pointer-events-none flex items-center justify-center">
                         <span
                             ref={bigStarRef}
                             className="flex items-center justify-center w-full h-full"
@@ -146,7 +146,7 @@ export const Header = () => {
                 {/* --- БУРГЕР (Только мобилка) --- */}
                 {/* Класс наложения убран отсюда, так как он теперь на родительском header */}
                 <button
-                    className="lg:hidden absolute top-[4vh] left-[6vw] w-[44px] h-[44px] border-none !border-0 outline-none pointer-events-auto z-[200] flex items-center justify-center bg-transparent"
+                    className="lg:hidden absolute top-[calc(4vh+env(safe-area-inset-top))] left-[6vw] w-[44px] h-[44px] border-none !border-0 outline-none pointer-events-auto z-[200] flex items-center justify-center bg-transparent"
                     style={{ border: 'none', background: 'transparent', transform: 'translateZ(0)' }}
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     aria-label="Toggle menu"
@@ -154,9 +154,9 @@ export const Header = () => {
                     <div
                         ref={lottieContainerRef}
                         className="header-lottie-icon absolute w-[120px] h-[120px] scale-[1.3] flex items-center justify-center pointer-events-none [&_path]:!fill-[var(--lottie-color)] [&_path]:!stroke-[var(--lottie-color)]"
-                        style={{ 
+                        style={{
                             color: themeColor,
-                            '--lottie-color': themeColor 
+                            '--lottie-color': themeColor
                         } as React.CSSProperties}
                     />
                 </button>
@@ -165,7 +165,7 @@ export const Header = () => {
                 <div className="absolute inset-0 w-full h-full pointer-events-none z-[60]">
 
                     {/* --- 1. БЛОК ЛОГОТИПА --- */}
-                    <div className="absolute top-[4vh] right-[6vw] lg:top-[40px] lg:left-[40px] lg:right-auto flex items-center z-[150] pointer-events-auto h-[44px]">
+                    <div className="absolute top-[calc(4vh+env(safe-area-inset-top))] right-[10.5vw] lg:top-[40px] lg:left-[40px] lg:right-auto flex items-center z-[150] pointer-events-auto h-[44px]">
                         <div className={`transition-all duration-300 flex items-center z-[10] origin-right lg:origin-left lg:!delay-0
                             ${isMenuOpen ? 'opacity-0 scale-95 pointer-events-none delay-0' : 'opacity-100 scale-100 pointer-events-auto delay-[200ms]'}
                             lg:!opacity-100 lg:!scale-100 lg:!pointer-events-auto
@@ -185,7 +185,7 @@ export const Header = () => {
                     </div>
 
                     {/* --- 2. БЛОК ТОЛЬКО ДЛЯ МЕНЮ --- */}
-                    <div className="absolute top-[4.2vh] right-[2vw] lg:top-[40px] lg:right-[40px] flex items-center justify-end z-[150] pointer-events-auto h-[44px]">
+                    <div className="absolute top-[calc(4.2vh+env(safe-area-inset-top))] right-[2vw] lg:top-[40px] lg:right-[40px] flex items-center justify-end z-[150] pointer-events-auto h-[44px]">
                         <nav className={`lg:hidden flex flex-row items-center transition-all ease-[cubic-bezier(0.76,0,0.24,1)] absolute right-[26vw] origin-right z-[10]
                             ${isMenuOpen ? 'duration-500 opacity-100 translate-x-0 pointer-events-auto' : 'duration-200 opacity-0 translate-x-8 pointer-events-none'}
                         `}>
