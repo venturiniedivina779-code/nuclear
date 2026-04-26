@@ -35,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} pt-[max(env(safe-area-inset-top),20px)]`}>
 
         {/* Кастомный курсор будет работать на всех страницах */}
         <CustomCursor />
