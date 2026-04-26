@@ -56,10 +56,8 @@ export default function Home() {
 
       {/* ====== ОСНОВНОЙ КОНТЕНТ СТРАНИЦЫ ====== */}
       <div className="absolute inset-0 w-full h-full">
-        {/* Обертка для учета глобального паддинга body */}
-        <div className="relative w-full h-full">
-          {/* Оставил твой гениальный blend-exclusion, который сам меняет цвет текста! */}
-          <div className="absolute top-0 left-0 w-full h-full z-[95] pointer-events-none blend-exclusion">
+        {/* Оставил твой гениальный blend-exclusion, который сам меняет цвет текста! */}
+        <div className="absolute top-0 left-0 w-full h-full z-[95] pointer-events-none blend-exclusion">
 
             {/* Приветственный текст (Скрыт на мобилках, как и было) */}
             <div className="animate-up opacity-0 hidden lg:block absolute  top-[40px] left-[22.2vw]">

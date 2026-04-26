@@ -11,13 +11,6 @@ const inter = Inter({
   weight: ['400', '500', '700']
 });
 
-export const viewport = {
-  themeColor: '#ebebeb',
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
-};
-
 export const metadata: Metadata = {
   title: 'Nuclear Garden',
   description: 'Welcome to my Nuclear Garden',
@@ -35,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} pt-[max(env(safe-area-inset-top),20px)]`}>
+      <body className={inter.className}>
 
         {/* Кастомный курсор будет работать на всех страницах */}
         <CustomCursor />

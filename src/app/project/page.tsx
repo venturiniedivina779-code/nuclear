@@ -193,7 +193,7 @@ export default function ProjectPage() {
     }, []);
 
     return (
-        <div id="project-main-container" className={`fixed top-[env(safe-area-inset-top)] left-0 w-full h-[calc(100dvh-env(safe-area-inset-top))] bg-[#efefef] text-[#111] z-[60] ${isDesktop ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
+        <div id="project-main-container" className={`fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] z-[60] ${isDesktop ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
 
             {isDesktop && (
                 <div
