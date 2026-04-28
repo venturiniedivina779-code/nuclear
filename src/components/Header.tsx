@@ -122,9 +122,9 @@ export const Header = () => {
         <>
             {/* 1. СЛОЙ ДЛЯ ЗВЕЗДЫ (БЕЗ НАЛОЖЕНИЯ) */}
             <div className="fixed top-0 left-0 w-full h-[100px] z-[90] pointer-events-none">
-                <div className="absolute top-[10vh] right-[4vw] lg:top-[40px] lg:left-[40px] lg:right-auto flex items-center z-[50] pointer-events-none h-[44px]">
+                <div className="absolute top-[10vh] right-[4vw] lg:top-[40px] lg:right-[40px] lg:left-auto min-[1441px]:left-[40px] min-[1441px]:right-auto flex items-center z-[50] pointer-events-none h-[44px]">
                     {/* Обёртка, которая отвечает только за позицию */}
-                    <div className="absolute top-[-55px] right-[-80px] md:right-[-160px] lg:right-auto lg:left-[120px] w-[280px] h-[280px] pointer-events-none flex items-center justify-center">
+                    <div className="absolute top-[-55px] right-[-80px] md:right-[-160px] lg:right-[-80px] min-[1441px]:right-auto lg:left-auto min-[1441px]:left-[120px] w-[280px] h-[280px] pointer-events-none flex items-center justify-center">
                         <span
                             ref={bigStarRef}
                             className="flex items-center justify-center w-full h-full"
@@ -165,8 +165,8 @@ export const Header = () => {
                 <div className="absolute inset-0 w-full h-full pointer-events-none z-[60]">
 
                     {/* --- 1. БЛОК ЛОГОТИПА --- */}
-                    <div className="absolute top-[4vh] right-[10.5vw] lg:top-[40px] lg:left-[40px] lg:right-auto flex items-center z-[150] pointer-events-auto h-[44px]">
-                        <div className={`transition-all duration-300 flex items-center z-[10] origin-right lg:origin-left lg:!delay-0
+                    <div className="absolute top-[4vh] right-[10vw] lg:top-[40px] lg:right-[40px] lg:left-auto min-[1441px]:left-[40px] min-[1441px]:right-auto flex items-center z-[150] pointer-events-auto h-[44px]">
+                        <div className={`transition-all duration-300 flex items-center z-[10] origin-right min-[1441px]:origin-left lg:!delay-0
                             ${isMenuOpen ? 'opacity-0 scale-95 pointer-events-none delay-0' : 'opacity-100 scale-100 pointer-events-auto delay-[200ms]'}
                             lg:!opacity-100 lg:!scale-100 lg:!pointer-events-auto
                         `}>
@@ -185,7 +185,7 @@ export const Header = () => {
                     </div>
 
                     {/* --- 2. БЛОК ТОЛЬКО ДЛЯ МЕНЮ --- */}
-                    <div className="absolute top-[4.2vh] right-[20vw] lg:top-[40px] lg:right-[40px] flex items-center justify-end z-[150] pointer-events-auto h-[44px]">
+                    <div className="absolute top-[4.2vh] right-[20vw] lg:top-[40px] lg:right-[220px] min-[1441px]:right-[40px] flex items-center justify-end z-[150] pointer-events-auto h-[44px]">
                         <nav className={`lg:hidden flex flex-row items-center transition-all ease-[cubic-bezier(0.76,0,0.24,1)] absolute right-[26vw] origin-right z-[10]
                             ${isMenuOpen ? 'duration-500 opacity-100 translate-x-0 pointer-events-auto' : 'duration-200 opacity-0 translate-x-8 pointer-events-none'}
                         `}>

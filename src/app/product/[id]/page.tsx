@@ -13,7 +13,7 @@ import { ShareModal } from '../../../components/ui/ShareModal';
 export default function ProductPage() {
     const params = useParams<{ id: string }>();
 
-    const productId = params.id ? params.id.toLowerCase() : 'pupsiko';
+    const productId = params.id ? params.id.toLowerCase() : 'prj_01';
     // Ищем продукт в новом массиве с помощью функции-хелпера
     // Если по какой-то причине URL неверный, берем первый попавшийся как fallback
     const product = getProductById(productId) || products[0];
@@ -44,7 +44,7 @@ export default function ProductPage() {
         };
         check();
         window.addEventListener('resize', check);
-        
+
         // Отключаем бленд-мод на мобилках для этой страницы, чтобы не блокировать клики
         document.documentElement.classList.add('disable-blend-on-mobile');
 
@@ -54,34 +54,11 @@ export default function ProductPage() {
         };
     }, []);
 
-    // На <=1440px: сбрасываем GSAP-трансформы и убираем lg-позиционирование
+    // На <=1440px: сбрасываем GSAP-трансформы
     useEffect(() => {
         if (!isDesktop) {
-            if (leftPanelRef.current) {
-                gsap.set(leftPanelRef.current, { clearProps: 'transform' });
-                leftPanelRef.current.style.setProperty('position', 'relative', 'important');
-                leftPanelRef.current.style.setProperty('width', '100%', 'important');
-                leftPanelRef.current.style.setProperty('height', 'auto', 'important');
-            }
-            if (rightContentRef.current) {
-                gsap.set(rightContentRef.current, { clearProps: 'transform' });
-                rightContentRef.current.style.setProperty('position', 'relative', 'important');
-                rightContentRef.current.style.setProperty('top', 'auto', 'important');
-                rightContentRef.current.style.setProperty('left', 'auto', 'important');
-                rightContentRef.current.style.setProperty('width', '100%', 'important');
-            }
-        } else {
-            if (leftPanelRef.current) {
-                leftPanelRef.current.style.removeProperty('position');
-                leftPanelRef.current.style.removeProperty('width');
-                leftPanelRef.current.style.removeProperty('height');
-            }
-            if (rightContentRef.current) {
-                rightContentRef.current.style.removeProperty('position');
-                rightContentRef.current.style.removeProperty('top');
-                rightContentRef.current.style.removeProperty('left');
-                rightContentRef.current.style.removeProperty('width');
-            }
+            if (leftPanelRef.current) gsap.set(leftPanelRef.current, { clearProps: 'all' });
+            if (rightContentRef.current) gsap.set(rightContentRef.current, { clearProps: 'all' });
         }
     }, [isDesktop]);
 
@@ -192,9 +169,11 @@ export default function ProductPage() {
                         </p>
 
                         <div className="flex flex-col gap-1 mb-[50px]">
-                            <span className="text-[11px] font-bold tracking-widest opacity-40 uppercase text-[#111]">Project Details</span>
-                            <span className="text-[14px] font-bold opacity-80 mt-2 text-[#111]">Year: {product.year}</span>
-                            <span className="text-[14px] font-bold opacity-80 text-[#111]">Role: {product.role}</span>
+                            <span className="text-[11px] font-bold tracking-widest opacity-40 uppercase text-[#111]">Детали проекта</span>
+                            <span className="text-[14px] font-bold opacity-80 mt-2 text-[#111]">Размер: {product.size}</span>
+                            <span className="text-[14px] font-bold opacity-80 text-[#111]">Материал: {product.material}</span>
+                            <span className="text-[14px] font-bold opacity-80 text-[#111]">Год: {product.year}</span>
+                            <span className="text-[14px] font-bold opacity-80 text-[#111]">Разработка: {product.role}</span>
                         </div>
 
                         <div className="flex items-center gap-[15px] w-full">
@@ -227,14 +206,12 @@ export default function ProductPage() {
 
                         <TransitionLink
                             href="/project"
-                            className="relative opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent flex items-center justify-center z-10 top-[50px] self-start mt-8"
+                            className="hidden lg:block opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent self-start mt-[60px] z-10"
                         >
-                            {/* Вы можете редактировать параметр scale(1) ниже, чтобы настроить размер SVG */}
                             <img
                                 src="/label_03.svg"
                                 alt="Back to projects"
-                                style={{ transform: 'scale(1.5)', transformOrigin: 'center left' }}
-                                className="block w-[120px] h-auto object-contain"
+                                className="block w-[180px] h-auto object-contain"
                             />
                         </TransitionLink>
 
@@ -260,6 +237,18 @@ export default function ProductPage() {
                                 </div>
                             ))}
                         </div>
+
+                        {/* Кнопка Back для мобилок и айпадов (появляется ПОСЛЕ фото) */}
+                        <TransitionLink
+                            href="/project"
+                            className="block lg:hidden opacity-90 hover:opacity-50 transition-opacity outline-none border-none bg-transparent self-start mt-[60px] mb-[60px] z-[10]"
+                        >
+                            <img
+                                src="/label_03.svg"
+                                alt="Back to projects"
+                                className="block w-[180px] h-auto object-contain"
+                            />
+                        </TransitionLink>
                     </div>
                 </div>
             </div>

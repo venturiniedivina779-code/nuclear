@@ -111,8 +111,8 @@ export default function ContactPage() {
 
     return (
         <main className="fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] overflow-hidden z-[60]">
-            <div className="absolute top-0 left-0 w-full h-[100dvh] pointer-events-none z-30 flex flex-col xl:flex-row">
-                <div className="pointer-events-auto w-full h-full xl:w-[45%] flex flex-col px-[6vw] xl:pl-[4vw] xl:pr-0 pt-[16vh] md:pt-[20vh] xl:pt-[28vh] box-border">
+            <div className="absolute top-0 left-0 w-full h-[100dvh] pointer-events-none z-30 flex flex-col lg:flex-row">
+                <div className="pointer-events-auto w-full h-full lg:w-[45%] flex flex-col px-[6vw] lg:pl-[4vw] lg:pr-0 pt-[16vh] md:pt-[20vh] lg:pt-[28vh] box-border">
                     <div className="w-full">
 
                         {/* НАША НОВАЯ МНОГОСЛОЙНАЯ АНИМАЦИЯ */}
@@ -124,18 +124,18 @@ export default function ContactPage() {
                             />
                         )}
 
-                        <p className="animate-stagger opacity-0 text-[20px] md:text-[24px] lg:text-[28px] xl:text-[1.2vw] font-medium leading-[1.6] text-[#111] opacity-90 mb-12 md:mb-16 xl:mb-12 max-w-[500px] lg:max-w-[750px] xl:max-w-[500px]">
+                        <p className="animate-stagger opacity-0 text-[20px] md:text-[24px] lg:text-[28px] lg:text-[1.2vw] font-medium leading-[1.6] text-[#111] opacity-90 mb-12 md:mb-16 lg:mb-12 max-w-[500px] lg:max-w-[750px] lg:max-w-[500px]">
                             Мы любим создавать вещи на стыке разных форматов — от цифровых 3D-инсталляций до лимитированных дропов из серебра и арт-игрушек. Если у вас есть идея для совместного проекта или смелой коллаборации, пишите нам в Telegram. Всегда рады новым лицам!
                         </p>
 
-                        <div className="flex flex-col gap-1 mb-8 lg:mb-12 xl:mb-8">
-                            <span className="animate-stagger opacity-0 text-[11px] md:text-[13px] lg:text-[14px] xl:text-[11px] font-bold tracking-widest text-[#111] opacity-40 uppercase mb-2">
+                        <div className="flex flex-col gap-1 mb-8 lg:mb-12 lg:mb-8">
+                            <span className="animate-stagger opacity-0 text-[11px] md:text-[13px] lg:text-[14px] lg:text-[11px] font-bold tracking-widest text-[#111] opacity-40 uppercase mb-2">
                                 Contact Details
                             </span>
-                            <a href="mailto:hello@kesa.today" className="animate-stagger opacity-0 text-[18px] md:text-[22px] lg:text-[26px] xl:text-[1.5vw] font-bold text-[#111] opacity-80 hover:opacity-100 transition-opacity no-underline w-max">
+                            <a href="mailto:hello@kesa.today" className="animate-stagger opacity-0 text-[18px] md:text-[22px] lg:text-[26px] lg:text-[1.5vw] font-bold text-[#111] opacity-80 hover:opacity-100 transition-opacity no-underline w-max">
                                 hello@kesa.today
                             </a>
-                            <a href="tel:+1234567890" className="animate-stagger opacity-0 text-[18px] md:text-[22px] lg:text-[26px] xl:text-[1.5vw] font-bold text-[#111] opacity-80 hover:opacity-100 transition-opacity no-underline w-max mt-2">
+                            <a href="tel:+1234567890" className="animate-stagger opacity-0 text-[18px] md:text-[22px] lg:text-[26px] lg:text-[1.5vw] font-bold text-[#111] opacity-80 hover:opacity-100 transition-opacity no-underline w-max mt-2">
                                 +1 (234) 567-890
                             </a>
                         </div>
@@ -143,7 +143,7 @@ export default function ContactPage() {
                         <MagneticSocials />
                     </div>
                 </div>
-                <div className="hidden xl:block xl:w-[55%] h-full pointer-events-none"></div>
+                <div className="hidden lg:block lg:w-[55%] h-full pointer-events-none"></div>
             </div>
         </main>
     );

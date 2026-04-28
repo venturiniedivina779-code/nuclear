@@ -8,43 +8,52 @@ export interface Product {
     description: string;
     galleryImagesCount: number;
     year: string;
+    size: string;
+    material: string;
     role: string;
+    illustrator?: string; // Сделаем необязательным, если нужно
     tags: string[]; // <-- Добавили массив хэштегов
 }
 
 export const products: Product[] = [
     {
-        id: 'pupsiko',
+        id: 'prj_01',
         folderId: 'prod_01',
         title: 'Открытки',
         price: '2000 ₽',
-        description: 'Коллекция открыток из 10 штук. Иллюстрации: Катя ну ёб твою мать.',
-        galleryImagesCount: 5,
-        year: '2024',
-        role: 'UI/UX Design',
-        tags: ['Открытки', 'Серебро'] // <-- Добавили нужные теги
+        description: 'Коллекция открыток «Горит сарай — гори и хата». В наборе 10 штук формата 10х15 см. Всё уже упаковано и ready to gift: можно подарить весь сет целиком или раздарить поштучно.',
+        galleryImagesCount: 6,
+        year: '2025',
+        size: '10х15 см',
+        material: 'Бумага',
+        role: 'катянуёбтвоюмать x kesa.exe',
+        tags: ['Открытки'] // <-- Добавили нужные теги
     },
     {
-        id: 'memo',
+        id: 'prj_02',
         folderId: 'prod_02',
-        title: 'Memo',
-        price: 'SOLD',
-        description: 'Детальное описание продукта Memo.',
-        galleryImagesCount: 4,
+        title: 'Открытки',
+        price: '2000',
+        description: 'Коллекция открыток «Горит сарай — гори и хата». В наборе 10 штук формата 7х10.5 см. Всё уже упаковано и ready to gift: можно подарить весь сет целиком или раздарить поштучно.',
+        galleryImagesCount: 6,
         year: '2024',
+        size: '7х10.5 см',
+        material: 'Бумага',
         role: 'UI/UX Design',
-        tags: ['Постеры', 'Серебро'] // <-- Добавили теги
+        tags: ['Открытки'] // <-- Добавили теги
     },
     {
-        id: 'third-product',
+        id: 'prj_03',
         folderId: 'prod_03',
         title: 'Приведение',
         price: 'SOLD',
         description: 'Описание',
         galleryImagesCount: 4,
         year: '2024',
-        role: 'UI/UX Design',
-        tags: ['Картины', 'Игрушки'] // <-- Добавили теги
+        size: '20х30 см',
+        material: 'Керамика',
+        role: 'Sculpture',
+        tags: ['Картины', 'Игрушки', 'Серебро'] // <-- Добавили теги
     }
 ];
 

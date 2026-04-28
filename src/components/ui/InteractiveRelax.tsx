@@ -27,7 +27,7 @@ export default function InteractiveRelax({ dataGirl, dataCube, dataTriangle }: I
     };
 
     return (
-        <div className="animate-stagger opacity-0 w-[250px] md:w-[350px] lg:w-[450px] xl:w-[4.5vw] mb-6 md:mb-10 xl:mb-6 translate-x-[-15px] origin-left scale-[1.4] lg:scale-[1.7] xl:scale-[1.6] relative">
+        <div className="animate-stagger opacity-0 w-[250px] md:w-[350px] lg:w-[450px] mb-6 md:mb-10 lg:mb-12 translate-x-[-15px] origin-left scale-[1.4] lg:scale-[1.7] relative">
 
             {/* БЛОК С АНИМАЦИЯМИ */}
             <div className="relative w-full h-full pointer-events-none">

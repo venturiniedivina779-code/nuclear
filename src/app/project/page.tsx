@@ -1,121 +1,80 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import Image from 'next/image';
-import { TransitionLink } from '../../components/TransitionLink';
-import { products, getPreviewImagePath, getAllTags } from '../../data/products';
+import gsap from 'gsap';
+import { products } from '@/data/products';
+import { TransitionLink } from '@/components/TransitionLink';
+
+// Функция для получения пути к заглавному изображению
+const getPreviewImagePath = (folderId: string) => {
+    return `/product/${folderId}/main_${folderId}.png`;
+};
 
 export default function ProjectPage() {
-    const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightContentRef = useRef<HTMLDivElement>(null);
-    const cursorPos = useRef({ x: 0, y: 0 });
-
-    const scrollState = useRef({ target: 0, current: 0 });
-    const [contentHeight, setContentHeight] = useState(2000);
-    const isDesktopRef = useRef(false);
+    const leftPanelRef = useRef<HTMLDivElement>(null);
+    const scrollState = useRef({ current: 0, target: 0 });
+    const [contentHeight, setContentHeight] = useState(0);
     const [isDesktop, setIsDesktop] = useState(false);
 
-    // Состояние для активного фильтра (хэштега)
-    const [activeFilter, setActiveFilter] = useState<string | null>(null);
-    const [hoveredTagIndex, setHoveredTagIndex] = useState<number | null>(null); // <-- ДОБАВИТЬ ЭТО
+    // Состояние фильтрации
+    const [activeFilter, setActiveFilter] = useState('All');
+    const [hoveredTagIndex, setHoveredTagIndex] = useState<number | null>(null);
 
-    // Получаем все доступные уникальные теги
-    const allTags = getAllTags();
-
-    // Собираем все кнопки в один массив
+    // Список категорий для фильтра
     const filterItems = [
-        { label: 'Все', value: null },
-        ...allTags.map(tag => ({ label: tag, value: tag }))
+        { label: 'Все', value: 'All' },
+        { label: 'Открытки', value: 'Открытки' },
+        { label: 'Картины', value: 'Картины' },
+        { label: 'Игрушки', value: 'Игрушки' },
+        { label: 'Серебро', value: 'Серебро' },
     ];
 
-    // Фильтруем продукты (добавил проверку p.tags на всякий случай, если у кого-то нет тегов)
-    const filteredProducts = activeFilter
-        ? products.filter(p => p.tags && p.tags.includes(activeFilter))
-        : products;
+    // Отфильтрованные продукты
+    const filteredProducts = useMemo(() => {
+        if (activeFilter === 'All') return products;
+        return products.filter(p => p.tags.includes(activeFilter));
+    }, [activeFilter]);
 
-    // Порог для кастомного скролла (>1440px)
+    // Проверка устройства и инициализация
     useEffect(() => {
-        const check = () => {
+        const checkDesktop = () => {
+            // Порог для кастомного скролла (>1440px)
             const d = window.innerWidth > 1440;
             setIsDesktop(d);
-            isDesktopRef.current = d;
-        };
-        check();
-        window.addEventListener('resize', check);
 
-        // Отключаем бленд-мод на мобилках для этой страницы, чтобы не блокировать клики
-        document.documentElement.classList.add('disable-blend-on-mobile');
-
-        return () => {
-            window.removeEventListener('resize', check);
-            document.documentElement.classList.remove('disable-blend-on-mobile');
+            // Если экран стал меньше 1440px, сбрасываем GSAP-трансформы
+            if (!d) {
+                if (rightContentRef.current) gsap.set(rightContentRef.current, { clearProps: 'all' });
+                if (leftPanelRef.current) gsap.set(leftPanelRef.current, { clearProps: 'all' });
+                scrollState.current.current = 0;
+                scrollState.current.target = 0;
+            }
         };
+
+        checkDesktop();
+        window.addEventListener('resize', checkDesktop);
+        return () => window.removeEventListener('resize', checkDesktop);
     }, []);
 
-    // На <=1440px: сбрасываем GSAP-трансформы, показываем карточки, убираем lg-позиционирование
+    // GSAP Custom Scroll (Только для Desktop > 1440px)
     useEffect(() => {
-        if (!isDesktop) {
-            if (leftPanelRef.current) {
-                gsap.set(leftPanelRef.current, { clearProps: 'transform' });
-                leftPanelRef.current.style.setProperty('position', 'relative', 'important');
-                leftPanelRef.current.style.setProperty('width', '100%', 'important');
-                leftPanelRef.current.style.setProperty('height', 'auto', 'important');
-            }
-            if (rightContentRef.current) {
-                gsap.set(rightContentRef.current, { clearProps: 'transform' });
-                rightContentRef.current.style.setProperty('position', 'relative', 'important');
-                rightContentRef.current.style.setProperty('top', 'auto', 'important');
-                rightContentRef.current.style.setProperty('left', 'auto', 'important');
-                rightContentRef.current.style.setProperty('width', '100%', 'important');
-            }
-            requestAnimationFrame(() => {
-                if (rightContentRef.current) {
-                    const cards = rightContentRef.current.querySelectorAll('.product-card');
-                    cards.forEach((card) => {
-                        gsap.set(card as HTMLElement, { opacity: 1, y: 0, scale: 1 });
-                    });
-                }
-            });
-        } else {
-            if (leftPanelRef.current) {
-                leftPanelRef.current.style.removeProperty('position');
-                leftPanelRef.current.style.removeProperty('width');
-                leftPanelRef.current.style.removeProperty('height');
-            }
-            if (rightContentRef.current) {
-                rightContentRef.current.style.removeProperty('position');
-                rightContentRef.current.style.removeProperty('top');
-                rightContentRef.current.style.removeProperty('left');
-                rightContentRef.current.style.removeProperty('width');
-            }
-        }
-    }, [isDesktop, activeFilter]);
+        if (!isDesktop) return;
 
-    useEffect(() => {
-        let ctx = gsap.context(() => {
-            const staggerEls = document.querySelectorAll('.animate-stagger');
-            if (staggerEls.length > 0) {
-                gsap.fromTo(
-                    Array.from(staggerEls),
-                    { y: 15, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 1, stagger: 0.1, ease: 'power3.out' }
-                );
-            }
-
-            gsap.fromTo(".animate-up",
-                { y: 30, opacity: 0 },
-                { y: 0, opacity: 1, duration: 1.2, stagger: 0.1, ease: "power4.out" }
-            );
+        const ctx = gsap.context(() => {
+            let rightContentBaseY = 0;
 
             const renderTick = () => {
-                // На <=1440px — пропускаем кастомный скролл
-                if (!isDesktopRef.current) return;
+                // Плавная интерполяция скролла
+                scrollState.current.current = gsap.utils.interpolate(
+                    scrollState.current.current,
+                    scrollState.current.target,
+                    0.08
+                );
 
-                scrollState.current.current += (scrollState.current.target - scrollState.current.current) * 0.08;
                 const currentScrollRaw = scrollState.current.current;
 
-                let rightContentBaseY = 0;
                 if (rightContentRef.current) {
                     rightContentBaseY = rightContentRef.current.offsetTop;
                     gsap.set(rightContentRef.current, { y: -currentScrollRaw });
@@ -131,8 +90,6 @@ export default function ProjectPage() {
                 }
 
                 // Анимация появления карточек при скролле
-                // GSAP будет каждый кадр искать актуальные карточки, 
-                // что идеально работает вместе с нашей фильтрацией
                 if (rightContentRef.current) {
                     const viewportH = window.innerHeight;
                     const cards = rightContentRef.current.querySelectorAll('.product-card');
@@ -167,11 +124,6 @@ export default function ProjectPage() {
             };
         });
 
-        const handleMouseMove = (e: MouseEvent) => {
-            cursorPos.current = { x: e.clientX, y: e.clientY };
-        };
-        window.addEventListener('mousemove', handleMouseMove);
-
         const resizeObserver = new ResizeObserver(() => {
             let h = 0;
             if (rightContentRef.current) h += rightContentRef.current.offsetHeight;
@@ -187,10 +139,9 @@ export default function ProjectPage() {
 
         return () => {
             ctx.revert();
-            window.removeEventListener('mousemove', handleMouseMove);
             resizeObserver.disconnect();
         };
-    }, []);
+    }, [isDesktop]);
 
     return (
         <div id="project-main-container" className={`fixed top-0 left-0 w-full h-[100dvh] bg-[#efefef] text-[#111] z-[60] ${isDesktop ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
@@ -218,49 +169,31 @@ export default function ProjectPage() {
                 >
                     <div className="animate-stagger flex flex-col w-full max-w-[100%] lg:max-w-[90%] my-auto lg:m-auto">
                         <h2 className="text-[32px] md:text-[40px] lg:text-[3.5vw] font-bold tracking-tighter leading-none mb-6 text-[#111]">
-                            Overview
+                            Проекты
                         </h2>
 
                         <p className="text-[20px] md:text-lg lg:text-[1.2vw] font-medium leading-[1.6] text-[#111] opacity-90 mb-12">
-                            It's a modern minimal skin care website where I tried to make the design very eye catchy and layout is very clean and used a Beautiful typeface to emphasis the brand theme.
+                            Здесь собраны все наши проекты: актуальные вещи в наличии и архивные работы. По любым вопросам — пишите в директ.
                         </p>
 
-                        <div className="flex flex-col gap-1 mb-10">
-                            <span className="text-[11px] font-bold tracking-widest text-[#111] opacity-40 uppercase">
-                                Project Details
-                            </span>
-                            <span className="text-[14px] font-bold text-[#111] opacity-80 mt-2">
-                                Members: Independent
-                            </span>
-                            <span className="text-[14px] font-bold text-[#111] opacity-80">
-                                Role: UI/UX & Layout
-                            </span>
-                        </div>
-
-                        {/* Хэштеги / Фильтры с резиновым эффектом */}
                         <div
                             className="flex flex-wrap items-center gap-[10px] mt-[30px] -ml-[10px] pl-[10px] py-[10px]"
                             onMouseLeave={() => setHoveredTagIndex(null)}
                         >
                             {filterItems.map((item, index) => {
-                                // Базовые стили: цвет фона и текста зависит от того, активен ли этот фильтр
                                 const isActive = activeFilter === item.value;
                                 let bgTextClass = isActive ? 'bg-[#d1d1d1] text-[#111]' : 'bg-[#f4f4f4] text-[#111]';
                                 let opacityClass = isActive ? 'opacity-100' : 'opacity-80';
                                 let transformClass = 'translate-x-0 scale-100 z-0';
 
-                                // Логика "резинового" раздвигания при наведении
                                 if (hoveredTagIndex !== null) {
                                     if (index === hoveredTagIndex) {
-                                        // Наведенный элемент слегка увеличивается
                                         transformClass = 'scale-[1.1] z-10';
                                         opacityClass = 'opacity-100';
                                     } else if (index < hoveredTagIndex) {
-                                        // Все что слева - уезжает влево и тускнеет
                                         transformClass = '-translate-x-[15px] scale-95 z-0';
                                         opacityClass = 'opacity-40';
                                     } else if (index > hoveredTagIndex) {
-                                        // Все что справа - уезжает вправо и тускнеет
                                         transformClass = 'translate-x-[15px] scale-95 z-0';
                                         opacityClass = 'opacity-40';
                                     }
@@ -298,7 +231,7 @@ export default function ProjectPage() {
                                     <TransitionLink
                                         key={product.id}
                                         href={`/product/${product.id}`}
-                                        className="product-card cursor-pointer group relative bg-[#e3e3e3] aspect-square overflow-hidden opacity-0 shadow-sm w-full block"
+                                        className="product-card cursor-pointer group relative bg-[#e3e3e3] aspect-square overflow-hidden shadow-sm w-full block"
                                     >
                                         <div className="absolute top-[0px] md:top-[20px] left-[20px] z-10 flex flex-wrap gap-[10px] items-center pointer-events-none pr-[20px]">
                                             <h3 className="bg-[#f4f4f4] h-[40px] px-[14px] rounded-[8px] text-[16px] md:text-[24px] font-extrabold tracking-tight text-[#111] shadow-sm flex items-center justify-center leading-none m-0">
