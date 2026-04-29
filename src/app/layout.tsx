@@ -15,9 +15,8 @@ export const metadata: Metadata = {
   title: 'Nuclear Garden',
   description: 'Welcome to my Nuclear Garden',
   icons: {
-    icon: '/fav3.ico', // путь от папки public или app
-    // Если есть разные форматы:
-    apple: '/fav3.ico', // для айфонов
+    icon: '/fav3.ico', 
+    apple: '/fav3.ico', 
   },
 };
 

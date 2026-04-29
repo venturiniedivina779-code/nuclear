@@ -1,30 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 
 interface TypewriterProps {
   text: string;
   speed?: number;
   delay?: number;
+  weightInactive?: number;
+  weightActive?: number;
+  skewActive?: number;
+  maxDist?: number;
+  interactive?: boolean;
 }
 
-export function Typewriter({ text, speed = 30, delay = 1000 }: TypewriterProps) {
-  const [displayedText, setDisplayedText] = useState('');
-  const [mounted, setMounted] = useState(false); // Добавили состояние монтажа
+export function Typewriter({ 
+  text, 
+  speed = 30, 
+  delay = 1000,
+  weightInactive = 500, // Базовая толщина для обычного текста
+  weightActive = 900,   // Надувается при наведении
+  skewActive = 15,      // Наклон поменьше для читаемости
+  maxDist = 120,
+  interactive = false
+}: TypewriterProps) {
+  const [displayedCount, setDisplayedCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const containerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    setMounted(true); // Сообщаем, что мы в браузере
+    setMounted(true);
 
     let timeout: NodeJS.Timeout;
     let interval: NodeJS.Timeout;
 
-    setDisplayedText('');
+    setDisplayedCount(0);
 
     timeout = setTimeout(() => {
       let i = 0;
       interval = setInterval(() => {
-        setDisplayedText(text.slice(0, i + 1));
         i++;
+        setDisplayedCount(i);
         if (i >= text.length) {
           clearInterval(interval);
         }
@@ -37,14 +53,63 @@ export function Typewriter({ text, speed = 30, delay = 1000 }: TypewriterProps) 
     };
   }, [text, speed, delay]);
 
-  // Если мы еще не в браузере, рисуем только пустую строку
-  // Это уберет ошибку Hydration Failed
+  // Логика интерактивности (Text Pressure)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !mounted || !interactive) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const spans = container.querySelectorAll('.pressure-char');
+      spans.forEach((span) => {
+        const rect = span.getBoundingClientRect();
+        const charCenterX = rect.left + rect.width / 2;
+        const charCenterY = rect.top + rect.height / 2;
+        const distX = e.clientX - charCenterX;
+        const distY = e.clientY - charCenterY;
+        const distance = Math.sqrt(distX * distX + distY * distY);
+
+        const influence = Math.max(0, 1 - distance / maxDist);
+        const weight = weightInactive + (weightActive - weightInactive) * influence;
+        
+        const skewDirection = distX > 0 ? 1 : -1;
+        const skew = (skewActive * influence) * skewDirection;
+
+        gsap.to(span, {
+          fontVariationSettings: `"wght" ${weight}`,
+          skewX: skew,
+          duration: 0.4,
+          ease: 'power2.out',
+        });
+      });
+    };
+
+    const handleMouseLeave = () => {
+      const spans = container.querySelectorAll('.pressure-char');
+      gsap.to(spans, {
+        fontVariationSettings: `"wght" ${weightInactive}`,
+        skewX: 0,
+        duration: 0.8,
+        ease: 'power2.out',
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [mounted, weightInactive, weightActive, skewActive, maxDist, displayedCount]);
+
   if (!mounted) {
     return <span className="text-[inherit]">_</span>;
   }
 
+  const chars = text.split('');
+
   return (
-    <span className="text-[inherit]">
+    <span ref={containerRef} className="text-[inherit]">
       <style>{`
         @keyframes custom-blink {
           0%, 100% { opacity: 1; }
@@ -55,7 +120,18 @@ export function Typewriter({ text, speed = 30, delay = 1000 }: TypewriterProps) 
         }
       `}</style>
 
-      {displayedText}
+      {chars.map((char, index) => (
+        <span
+          key={index}
+          className="pressure-char inline-block"
+          style={{ 
+            fontVariationSettings: `"wght" ${weightInactive}, "slnt" 0`,
+            display: index >= displayedCount ? 'none' : 'inline-block'
+          }}
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </span>
+      ))}
 
       <span className="cursor-blink inline-block ml-[2px] font-bold">
         _

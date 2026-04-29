@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import { Preloader } from '@/components/Preloader';
 import { Typewriter } from '@/components/ui/Typewriter';
 import { TextPressure } from '@/components/ui/TextPressure';
+import InteractivePhysicsBackground from '@/components/InteractivePhysicsBackground';
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -65,6 +66,9 @@ export default function Home() {
         onComplete={() => setLoading(false)}
       />
 
+      {/* ====== НАШ НОВЫЙ ФОН ====== */}
+      <InteractivePhysicsBackground />
+
       {/* ====== ОСНОВНОЙ КОНТЕНТ СТРАНИЦЫ ====== */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
 
@@ -77,7 +81,7 @@ export default function Home() {
                 className="text-[24vw] leading-[0.8] tracking-tighter text-[#000] uppercase font-black"
                 maxDist={500} // Огромный радиус для огромных букв
                 skewActive={35} // Сильнее наклон
-                animateMode="v-cursor" // Авто-движение на мобилках
+                animateMode={viewMode === 'desktop' ? 'none' : 'v-cursor'} // На десктопе - мышь, на мобилках - авто
               />
             </div>
           </div>
@@ -103,7 +107,7 @@ export default function Home() {
               <TextPressure
                 text={"Ядерный\nСад"}
                 className="text-[length:var(--title-size)] leading-[0.95] lg:leading-[0.9] tracking-tighter text-[#ebebeb]"
-                animateMode="random" // Случайные вспышки на мобилках
+                animateMode="random" // Всегда случайные вспышки
               />
             </div>
           )}

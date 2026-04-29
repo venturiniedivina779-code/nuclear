@@ -45,11 +45,14 @@ export function TextPressure({
 
                 const influence = Math.max(0, 1 - distance / maxDist);
                 const weight = weightInactive + (weightActive - weightInactive) * influence;
-                const skew = 0 + (skewActive - 0) * influence;
+                
+                // Наклон в обе стороны: если мышка справа (distX > 0), наклоняем влево, и наоборот
+                const skewDirection = distX > 0 ? 1 : -1;
+                const skew = (skewActive * influence) * skewDirection;
 
                 gsap.to(span, {
                     fontVariationSettings: `"wght" ${weight}`,
-                    skewX: -skew,
+                    skewX: skew,
                     duration: 0.3,
                     ease: 'power2.out',
                 });
@@ -65,30 +68,29 @@ export function TextPressure({
             });
         };
 
-        // --- АВТОМАТИЧЕСКАЯ АНИМАЦИЯ (Мобилки / Айпады) ---
+        // --- АВТОМАТИЧЕСКАЯ АНИМАЦИЯ (Любые экраны, если включен режим) ---
         let vCursorTween: gsap.core.Tween | null = null;
 
-        if (isMobile && animateMode !== 'none') {
+        if (animateMode !== 'none') {
             if (animateMode === 'random') {
                 // ВАРИАНТ 1: Случайные вспышки с затуханием (волна)
                 const triggerRandom = () => {
                     const centerIndex = Math.floor(Math.random() * spans.length);
-                    const radius = 3; // Сколько букв задеваем в каждую сторону
+                    const radius = 3; 
+                    const randomDirection = Math.random() > 0.5 ? 1 : -1; // Рандомный наклон для всей волны
 
                     for (let i = centerIndex - radius; i <= centerIndex + radius; i++) {
                         if (i >= 0 && i < spans.length) {
                             const target = spans[i];
                             const distance = Math.abs(i - centerIndex);
-                            // Линейное затухание: 1.0, 0.75, 0.5, 0.25...
                             const intensity = 1 - (distance / (radius + 1)); 
 
-                            // Рассчитываем целевые значения с учетом интенсивности
                             const currentWeight = weightInactive + (weightActive - weightInactive) * intensity;
-                            const currentSkew = 0 + (skewActive - 0) * intensity;
+                            const currentSkew = (skewActive * intensity) * randomDirection;
 
                             gsap.to(target, {
                                 fontVariationSettings: `"wght" ${currentWeight}`,
-                                skewX: -currentSkew,
+                                skewX: currentSkew,
                                 duration: 2.5,
                                 yoyo: true,
                                 repeat: 1,
@@ -97,16 +99,14 @@ export function TextPressure({
                         }
                     }
 
-                    // Следующая вспышка через случайное время
                     setTimeout(triggerRandom, Math.random() * 2000 + 1000);
                 };
 
-                // Запускаем два независимых потока вспышек для живости
                 setTimeout(triggerRandom, 500);
                 setTimeout(triggerRandom, 1500);
 
-            } else if (animateMode === 'v-cursor') {
-                // ВАРИАНТ 3: Виртуальный курсор
+            } else if (animateMode === 'v-cursor' && isMobile) {
+                // ВАРИАНТ 3: Виртуальный курсор (только для мобилок/планшетов)
                 const vCursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
                 const updateByVCursor = () => {
@@ -120,11 +120,13 @@ export function TextPressure({
 
                         const influence = Math.max(0, 1 - distance / maxDist);
                         const weight = weightInactive + (weightActive - weightInactive) * influence;
-                        const skew = 0 + (skewActive - 0) * influence;
+                        
+                        const skewDirection = distX > 0 ? 1 : -1;
+                        const skew = (skewActive * influence) * skewDirection;
 
                         gsap.to(span, {
                             fontVariationSettings: `"wght" ${weight}`,
-                            skewX: -skew,
+                            skewX: skew,
                             duration: 0.5,
                             ease: 'power2.out',
                         });
@@ -145,7 +147,8 @@ export function TextPressure({
             }
         }
 
-        if (!isMobile || animateMode === 'none') {
+        // Мышку слушаем только если НЕ мобилка И режим анимации 'none'
+        if (!isMobile && animateMode === 'none') {
             window.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseleave', handleMouseLeave);
         }
